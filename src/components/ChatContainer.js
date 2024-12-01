@@ -7,6 +7,7 @@ import { IoArrowUp } from 'react-icons/io5';
 import Chat from './Chat';
 import ChatModelDropdown from './ChatModelDropdown';
 
+
 function ChatContainer() {
   const {
     selectedModel,
@@ -23,8 +24,6 @@ function ChatContainer() {
   } = useContext(ContextApp);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  //   console.log(account);
 
   return (
     <div

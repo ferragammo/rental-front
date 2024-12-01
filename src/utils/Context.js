@@ -3,7 +3,9 @@ import { sendMsgToAI } from './OpenAi';
 import { getAccount } from '../api/accountApi';
 import { ChatModelType } from '../static/enums/ChatModelType';
 import Cookies from 'js-cookie';
+import { getAllChatMessages, sendMessage } from "../api/messageApi";
 import { getChatById, getChats } from '../api/chatApi';
+
 export const ContextApp = createContext();
 
 const AppContext = ({ children }) => {
@@ -29,22 +31,38 @@ const AppContext = ({ children }) => {
     }
   }, [message]);
 
-  // button Click function
+  const loadChatMessages = async () => {
+    const token = Cookies.get('accessToken');
+    const chatId = '674c5c9fed4768a959ab0f3e';
+    const result = await getAllChatMessages(token, chatId);
+    console.log(result);
+  
+    // Преобразуем сообщения в формат, который подходит для state
+    const formattedMessages = result.data.map(msg => ({
+      text: msg.text,
+      isBot: msg.author === 'assistant', // Используем значение авторов для определения isBot
+    }));
+  
+    setMessage(prevMessages => [...prevMessages, ...formattedMessages]);
+  };
+  
+
+    // button Click function
   const handleSend = async () => {
     const text = chatValue;
-    setChatValue('');
-    setMessage([...message, { text, isBot: false }]);
-    const res = await sendMsgToAI(text);
-    setMessage([
-      ...message,
+    setChatValue("");
+    setMessage((prevMessages) => [
+      ...prevMessages,
       { text, isBot: false },
-      { text: res, isBot: true },
     ]);
+    const token = Cookies.get('accessToken');
+    const chatId ='674c5c9fed4768a959ab0f3e'
+    // Отправка сообщения и обновление UI с постепенной подгрузкой
+    await sendMessage(token, chatId, text, setMessage);
   };
-
   // Enter Click function
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSend();
     }
   };
@@ -53,12 +71,12 @@ const AppContext = ({ children }) => {
   const handleQuery = async (e) => {
     const text = e.target.innerText;
     setMessage([...message, { text, isBot: false }]);
-    const res = await sendMsgToAI(text);
-    setMessage([
-      ...message,
-      { text, isBot: false },
-      { text: res, isBot: true },
-    ]);
+    // const res = await sendMsgToAI(text);
+    // setMessage([
+    //   ...message,
+    //   { text, isBot: false },
+    //   { text: res, isBot: true },
+    // ]);
   };
 
   const selectChatById = async (chatId) => {
@@ -133,6 +151,7 @@ const AppContext = ({ children }) => {
         handleQuery,
         account,
         status,
+        loadChatMessages
         selectedModel,
         setSelectedModel,
         setSelectedChat,
