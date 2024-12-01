@@ -1,11 +1,14 @@
 import { createContext, useEffect, useRef, useState } from "react";
 import { sendMsgToAI } from "./OpenAi";
+import { getAccount } from "../api/accountApi";
 export const ContextApp = createContext();
 
 const AppContext = ({ children }) => {
   const [showSlide, setShowSlide] = useState(false);
   const [Mobile, setMobile] = useState(false);
   const [chatValue, setChatValue] = useState("");
+  const [account, setAccount] =useState('');
+  const [status, setStatus]=useState('')
   const [message, setMessage] = useState([
     {
       text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI. My primary function is to assist users in generating human-like text based on the prompts and questions I receive. I have been trained on a diverse range of internet text up until September 2021, so I can provide information, answer questions, engage in conversations, offer suggestions, and more on a wide array of topics. Please feel free to ask me anything or let me know how I can assist you today!",
@@ -16,7 +19,7 @@ const AppContext = ({ children }) => {
 
   useEffect(() => {
     if (msgEnd.current) {
-      msgEnd.current.scrollIntoView({ behavior: "smooth" });
+      msgEnd.current.scrollIntoView();
     }
   }, [message]);
   
@@ -52,6 +55,24 @@ const AppContext = ({ children }) => {
       { text: res, isBot: true },
     ]);
   };
+
+  useEffect(() => {
+		const fetchAccountType = async () => {
+			try {
+				const { account, statusCode } = await getAccount();
+				if (account) {
+					setAccount(account);
+				}
+				setStatus(statusCode);
+			} catch (error) {
+				setAccount(null);
+				setStatus(null); 
+			}
+		};
+
+    fetchAccountType();
+  }, []);
+
   return (
     <ContextApp.Provider
       value={{
@@ -66,6 +87,8 @@ const AppContext = ({ children }) => {
         msgEnd,
         handleKeyPress,
         handleQuery,
+        account,
+        status
       }}
     >
       {children}

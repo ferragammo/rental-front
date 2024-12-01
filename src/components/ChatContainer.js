@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ContextApp } from '../utils/Context';
 import { LuPanelLeftClose, LuPanelLeftOpen } from 'react-icons/lu';
 import { HiOutlineMenuAlt2 } from 'react-icons/hi';
@@ -7,6 +7,7 @@ import { IoArrowUp } from 'react-icons/io5';
 import Chat from './Chat';
 import ChatModelDropdown from './ChatModelDropdown';
 import { ChatModelType } from '../static/enums/ChatModelType';
+import { getAccount } from '../api/accountApi';
 function ChatContainer() {
     const {
         setShowSlide,
@@ -17,10 +18,13 @@ function ChatContainer() {
         setChatValue,
         handleSend,
         handleKeyPress,
+        account
     } = useContext(ContextApp);
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 const [selectedModel, setSelectedModel]=useState(ChatModelType.gpt_4o_mini);
+
+console.log(account)
  
     return (
         <div
