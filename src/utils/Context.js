@@ -23,8 +23,9 @@ const AppContext = ({ children }) => {
             isBot: true,
         },
     ]);
-    const [selectedChat, setSelectedChat] = useState("674c5c9fed4768a959ab0f3e");
+    const [selectedChat, setSelectedChat] = useState(null);
     const msgEnd = useRef(null);
+
 
     useEffect(() => {
         if (msgEnd.current) {
@@ -33,25 +34,27 @@ const AppContext = ({ children }) => {
     }, [message]);
 
     const loadChatMessages = async () => {
-        const token = Cookies.get('accessToken');
-        const chatId = '674c5c9fed4768a959ab0f3e';
-        if (selectedChat) {
-            const result = await getAllChatMessages(token, selectedChat);
-            console.log(result);
+      const token = Cookies.get('accessToken');
+      console.log(selectedChat)
+      // const chatId = '674c5c9fed4768a959ab0f3e';
+      if (selectedChat) {
+          const result = await getAllChatMessages(token, selectedChat);
+          console.log(result);
 
-            // Преобразуем сообщения в формат, который подходит для state
+          // Преобразуем сообщения в формат, который подходит для state
 
-            const formattedMessages = result.data.map((msg) => ({
-                text: msg.text,
-                isBot: msg.author === 'assistant', // Используем значение авторов для определения isBot
-            }));
+          const formattedMessages = result.data.map((msg) => ({
+              text: msg.text,
+              isBot: msg.author === 'assistant', // Используем значение авторов для определения isBot
+          }));
 
-            setMessage((prevMessages) => [
-                ...prevMessages,
-                ...formattedMessages,
-            ]);
-        }
-    };
+          setMessage((prevMessages) => [
+              ...prevMessages,
+              ...formattedMessages,
+          ]);
+      }
+  };
+
 
     // button Click function
     const handleSend = async () => {
@@ -82,45 +85,44 @@ const AppContext = ({ children }) => {
         // ]);
     };
 
-    const selectChatById = async (chatId) => {
-        try {
-            const token = Cookies.get('accessToken');
-            if (!token) {
-                console.error('Token not found');
-                return;
-            }
-            const chat = await getChatById(chatId, token);
-            if (chat) {
-                setMessage(chat.messages || []);
-            }
-        } catch (error) {
-            console.error('Error fetching chat by ID:', error.message);
-        }
-    };
+    const selectedChatById = async (chatId) => {
+      try {
+          const token = Cookies.get('accessToken');
+          if (!token) {
+              console.error('Token not found');
+              return;
+          }
+          const chat = await getChatById(chatId, token);
+          if (chat) {
+              setMessage(chat.messages || []);  // Загружаем сообщения для выбранного чата
+              setSelectedChat(chatId);  // Обновляем selectedChat
+          }
+      } catch (error) {
+          console.error('Error fetching chat by ID:', error.message);
+      }
+  };
+  
 
     useEffect(() => {
-        const getAllChats = async () => {
-            try {
-                const token = Cookies.get('accessToken');
-                if (!token) {
-                    return { account: null, statusCode: 401 };
-                }
-                const response = await getChats(token, 0, 10);
-                if (response.data) {
-                    if (
-                        JSON.stringify(response.data) !== JSON.stringify(chats)
-                    ) {
-                        setChats(response.data);
-                    }
-                } else {
-                    console.log(response.error);
-                }
-            } catch (error) {
-                console.log(error.message || 'Ошибка при загрузке чатов');
-            }
-        };
-        getAllChats();
-    }, [chats]);
+      const getAllChats = async () => {
+          try {
+              const token = Cookies.get('accessToken');
+              if (!token) {
+                  return { account: null, statusCode: 401 };
+              }
+              const response = await getChats(token, 0, 10);
+              if (response.data) {
+                  setChats(response.data); 
+              } else {
+                  console.log(response.error);
+              }
+          } catch (error) {
+              console.log(error.message || 'Ошибка при загрузке чатов');
+          }
+      };
+      getAllChats();
+  }, []); 
+  
 
     useEffect(() => {
         const fetchAccountType = async () => {
@@ -161,7 +163,7 @@ const AppContext = ({ children }) => {
                 setSelectedModel,
                 setSelectedChat,
                 selectedChat,
-                selectChatById,
+                selectedChatById
             }}
         >
             {children}
