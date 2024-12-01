@@ -29,11 +29,12 @@ const AppContext = ({ children }) => {
 
     useEffect(() => {
         if (msgEnd.current) {
-            msgEnd.current.scrollIntoView();
+            msgEnd.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [message]);
 
     const loadChatMessages = async () => {
+
       const token = Cookies.get('accessToken');
       console.log(selectedChat)
       // const chatId = '674c5c9fed4768a959ab0f3e';
@@ -48,10 +49,7 @@ const AppContext = ({ children }) => {
               isBot: msg.author === 'assistant', // Используем значение авторов для определения isBot
           }));
 
-          setMessage((prevMessages) => [
-              ...prevMessages,
-              ...formattedMessages,
-          ]);
+          setMessage(formattedMessages);
       }
   };
 
@@ -94,7 +92,7 @@ const AppContext = ({ children }) => {
           }
           const chat = await getChatById(chatId, token);
           if (chat) {
-              setMessage(chat.messages || []);  // Загружаем сообщения для выбранного чата
+             
               setSelectedChat(chatId);  // Обновляем selectedChat
           }
       } catch (error) {
