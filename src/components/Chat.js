@@ -2,10 +2,11 @@ import React, { useContext, useEffect } from "react";
 import { ContextApp } from "../utils/Context";
 
 function Chat() {
-  const { message, msgEnd, loadChatMessages } = useContext(ContextApp);
+  const { message, msgEnd, loadChatMessages, chats } = useContext(ContextApp);
   useEffect(() => {
-    loadChatMessages();
-  }, []);
+    if(chats.length>0){
+    loadChatMessages();}
+  }, [chats]);
   return (
     <div className=" w-full flex items-center justify-center overflow-hidden overflow-y-auto px-2 py-1 scroll">
       <div className="w-full lg:w-4/5 flex flex-col h-full items-start justify-start">
