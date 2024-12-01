@@ -42,7 +42,7 @@ export const getChatById = async (chatId, token) => {
     }
   } catch (error) {
     console.error(
-      'Failed to fetch agent data:',
+      'Failed to fetch chats:',
       error.response ? error.response.data : error.message
     );
     throw error;

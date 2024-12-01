@@ -12,13 +12,13 @@ function LeftNav() {
   const [buttonPosition, setButtonPosition] = useState({ bottom: 0, right: 0 });
   const [newTitle, setNewTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const { selectedModel, showSlide, setChats, chats, setSelectedChat, selectChatById, selectedChat } = useContext(ContextApp);
+  const { selectedModel, showSlide, setChats, chats, setSelectedChat, selectedChat, selectedChatById } = useContext(ContextApp);
 
 
 
   const handleSelectChat = (chatId) => {
     setSelectedChat(chatId)
-    selectChatById(chatId); 
+    selectedChatById(chatId)
   };
 
   const handleOpenModal = (e, chatId) => {
@@ -66,8 +66,6 @@ function LeftNav() {
       const response = await deleteChat(chatId, token);
       if (response.successful) {
         console.log('Chat deleted successfully:', response);
-
-        // Delete Local
         setChats((prevChats) => prevChats.filter((chat) => chat.id !== chatId));
       } else {
         console.error('Error deleting chat:', response.message);
