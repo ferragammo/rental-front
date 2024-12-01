@@ -15,8 +15,11 @@ const AppContext = ({ children }) => {
   const msgEnd = useRef(null);
 
   useEffect(() => {
-    msgEnd.current.scrollIntoView();
+    if (msgEnd.current) {
+      msgEnd.current.scrollIntoView({ behavior: "smooth" });
+    }
   }, [message]);
+  
 
   // button Click function
   const handleSend = async () => {
