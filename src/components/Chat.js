@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { ContextApp } from '../utils/Context';
 import ReactMarkdown from 'react-markdown';
 import Cookies from 'js-cookie';

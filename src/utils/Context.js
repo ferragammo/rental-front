@@ -3,11 +3,12 @@ import { getAccount } from '../api/accountApi';
 import { ChatModelType } from '../static/enums/ChatModelType';
 import Cookies from 'js-cookie';
 import { getAllChatMessages, sendMessage } from '../api/messageApi';
-import { getChatById, getChats } from '../api/chatApi';
+import { createChat, getChatById, getChats } from '../api/chatApi';
 
 export const ContextApp = createContext();
 
 const AppContext = ({ children }) => {
+
     const [showSlide, setShowSlide] = useState(false);
     const [Mobile, setMobile] = useState(false);
     const [chats, setChats] = useState([]);
@@ -38,11 +39,14 @@ const AppContext = ({ children }) => {
     //'674d7f4eed4768a959ab111c'
     const msgEnd = useRef(null);
 
-    useEffect(() => {
-        if (msgEnd.current) {
-            msgEnd.current.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [message]);
+
+
+  useEffect(() => {
+    if (msgEnd.current) {
+      msgEnd.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [message]);
+
 
     const loadChatMessages = async (chatId) => {
         const token = Cookies.get('accessToken');
@@ -61,7 +65,37 @@ const AppContext = ({ children }) => {
         }
     };
 
-    // button Click function
+
+  const createChatAndSendMessage = async (text) => {
+    const token = Cookies.get('accessToken');
+    if (!selectedChat) {
+      try {
+        const newChat = await createChat(selectedModel, token || null);
+        if (newChat) {
+          setSelectedChat(newChat.data.id);
+           if (!fileData) {
+            await sendMessage(token, selectedChat, text, setMessage);
+        } else {
+            console.log(fileData);
+            await sendMessage(token, selectedChat, text, setMessage, fileData);
+        }
+        } else {
+          console.error('Failed to create a new chat');
+        }
+      } catch (error) {
+        console.error('Error creating new chat:', error);
+      }
+    } else {
+       if (!fileData) {
+            await sendMessage(token, selectedChat, text, setMessage);
+        } else {
+            console.log(fileData);
+            await sendMessage(token, selectedChat, text, setMessage, fileData);
+        }
+    }
+  };
+  
+  // button Click function
     const handleSend = async () => {
         const text = chatValue;
         setChatValue('');
@@ -83,19 +117,28 @@ const AppContext = ({ children }) => {
         }
     };
 
-    // Query Click function
-    const handleQuery = async (e) => {
-        const text = e.target.innerText;
-        setMessage([...message, { text, isBot: false }]);
-        // const res = await sendMsgToAI(text);
-        // setMessage([
-        //   ...message,
-        //   { text, isBot: false },
-        //   { text: res, isBot: true },
-        // ]);
-    };
 
-    const selectedChatById = async (chatId) => {
+ 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSend();
+    }
+  };
+
+  // Query Click function
+  const handleQuery = async (e) => {
+    const text = e.target.innerText;
+    setMessage([...message, { text, isBot: false }]);
+    // const res = await sendMsgToAI(text);
+    // setMessage([
+    //   ...message,
+    //   { text, isBot: false },
+    //   { text: res, isBot: true },
+    // ]);
+  };
+
+
+  const selectedChatById = async (chatId) => {
         try {
             const token = Cookies.get('accessToken');
             if (!token) {
@@ -111,6 +154,7 @@ const AppContext = ({ children }) => {
             console.error('Error fetching chat by ID:', error.message);
         }
     };
+
 
     const getAllChats = async () => {
         try {
@@ -179,5 +223,6 @@ const AppContext = ({ children }) => {
             {children}
         </ContextApp.Provider>
     );
+
 };
 export default AppContext;

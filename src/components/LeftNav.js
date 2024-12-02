@@ -5,21 +5,36 @@ import { ContextApp } from '../utils/Context';
 import Cookies from 'js-cookie';
 import { createChat, deleteChat, updateTitle } from '../api/chatApi';
 import ModalMore from './ModalMore';
+import { useNavigate } from 'react-router-dom';
 
 function LeftNav() {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [buttonPosition, setButtonPosition] = useState({ bottom: 0, right: 0 });
   const [newTitle, setNewTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const { selectedModel, showSlide, setChats, chats, setSelectedChat, selectedChat, selectedChatById } = useContext(ContextApp);
-
-
+  const {
+    selectedModel,
+    showSlide,
+    getAllChats,
+    chats,
+    setSelectedChat,
+    selectedChat,
+    selectedChatById,
+  } = useContext(ContextApp);
 
   const handleSelectChat = (chatId) => {
-    setSelectedChat(chatId)
-    selectedChatById(chatId)
+    setSelectedChat(chatId);
+    selectedChatById(chatId);
   };
+
+  function handleLogout() {
+    Cookies.remove('accessToken', {
+      path: '/',
+    });
+    navigate('/auth/login');
+  }
 
   const handleOpenModal = (e, chatId) => {
     const buttonRect = e.currentTarget.getBoundingClientRect();
@@ -58,6 +73,7 @@ function LeftNav() {
       setSelectedChatId(null);
       setNewTitle('');
     }
+    getAllChats();
   };
 
   const handleDelete = async (chatId) => {
@@ -66,7 +82,6 @@ function LeftNav() {
       const response = await deleteChat(chatId, token);
       if (response.successful) {
         console.log('Chat deleted successfully:', response);
-        setChats((prevChats) => prevChats.filter((chat) => chat.id !== chatId));
       } else {
         console.error('Error deleting chat:', response.message);
         alert(`Error: ${response.message}`);
@@ -74,6 +89,7 @@ function LeftNav() {
     } catch (error) {
       console.error('Unexpected error:', error);
     }
+    getAllChats();
   };
 
   const handleCloseModal = () => {
@@ -89,6 +105,7 @@ function LeftNav() {
       const response = await createChat(selectedModel, token);
       if (response.successful) {
         console.log('Chat created:', response);
+        setSelectedChat(response.data.id); 
       } else {
         console.error('Error creating chat:', response.message);
         alert(`Error: ${response.message}`);
@@ -96,6 +113,7 @@ function LeftNav() {
     } catch (error) {
       console.error('Unexpected error:', error);
     }
+    getAllChats();
   };
 
   return (
@@ -119,12 +137,12 @@ function LeftNav() {
         {chats && chats.length > 0 ? (
           chats.map((chat) => (
             <div
-            key={chat.id}
-            className={`rounded-lg w-full py-2 px-3 text-xs my-2 flex items-center justify-between cursor-pointer hover:bg-[#212121] transition-all duration-300 overflow-hidden truncate whitespace-nowrap ${
-              chat.id === selectedChat ? 'bg-[#212121]' : ''
-            }`}
-            onClick={() => handleSelectChat(chat.id)}
-          >
+              key={chat.id}
+              className={`rounded-lg w-full py-2 px-3 text-xs my-2 flex items-center justify-between cursor-pointer hover:bg-[#212121] transition-all duration-300 overflow-hidden truncate whitespace-nowrap ${
+                chat.id === selectedChat ? 'bg-[#212121]' : ''
+              }`}
+              onClick={() => handleSelectChat(chat.id)}
+            >
               {selectedChatId === chat.id && isEditing ? (
                 <div className="flex w-full items-center gap-2">
                   <input
@@ -161,6 +179,7 @@ function LeftNav() {
           <p>No chats available</p>
         )}
       </div>
+      <button onClick={handleLogout} className='text-lg font-geist bg-[#212121] duration-300 truncate mb-2 hover:bg-[#2c2b2b] py-3 rounded-lg w-full'>Log Out</button>
 
       <ModalMore
         isOpen={isModalOpen}
