@@ -25,7 +25,6 @@ function LeftNav() {
   } = useContext(ContextApp);
 
   const handleSelectChat = (chatId) => {
-    setSelectedChat(chatId);
     selectedChatById(chatId);
   };
 
@@ -106,6 +105,7 @@ function LeftNav() {
       if (response.successful) {
         console.log('Chat created:', response);
         setSelectedChat(response.data.id); 
+        selectedChatById(response.data.id);
       } else {
         console.error('Error creating chat:', response.message);
         alert(`Error: ${response.message}`);
