@@ -65,50 +65,37 @@ const AppContext = ({ children }) => {
         }
     };
 
-
-  const createChatAndSendMessage = async (text) => {
-    const token = Cookies.get('accessToken');
-    if (!selectedChat) {
-      try {
-        const newChat = await createChat(selectedModel, token || null);
-        if (newChat) {
-          setSelectedChat(newChat.data.id);
-           if (!fileData) {
-            await sendMessage(token, selectedChat, text, setMessage);
-        } else {
-            console.log(fileData);
-            await sendMessage(token, selectedChat, text, setMessage, fileData);
-        }
-        } else {
-          console.error('Failed to create a new chat');
-        }
-      } catch (error) {
-        console.error('Error creating new chat:', error);
-      }
-    } else {
-       if (!fileData) {
-            await sendMessage(token, selectedChat, text, setMessage);
-        } else {
-            console.log(fileData);
-            await sendMessage(token, selectedChat, text, setMessage, fileData);
-        }
-    }
-  };
-  
   // button Click function
     const handleSend = async () => {
         const text = chatValue;
         setChatValue('');
         setMessage((prevMessages) => [...prevMessages, { text, isBot: false }]);
         const token = Cookies.get('accessToken');
-        //const chatId = '674c5c9fed4768a959ab0f3e';
-        // Отправка сообщения и обновление UI с постепенной подгрузкой
-        if (!fileData) {
-            await sendMessage(token, selectedChat, text, setMessage);
-        } else {
-            console.log(fileData);
-            await sendMessage(token, selectedChat, text, setMessage, fileData);
-        }
+        if (!selectedChat) {
+            try {
+              const newChat = await createChat(selectedModel, token || null);
+              if (newChat) {
+                setSelectedChat(newChat.data.id);
+                 if (!fileData) {
+                  await sendMessage(token, newChat.data.id, text, setMessage);
+              } else {
+                  console.log(fileData);
+                  await sendMessage(token, newChat.data.id, text, setMessage, fileData);
+              }
+              } else {
+                console.error('Failed to create a new chat');
+              }
+            } catch (error) {
+              console.error('Error creating new chat:', error);
+            }
+          } else {
+             if (!fileData) {
+                  await sendMessage(token, selectedChat, text, setMessage);
+              } else {
+                  console.log(fileData);
+                  await sendMessage(token, selectedChat, text, setMessage, fileData);
+              }
+          }
     };
     // Enter Click function
     const handleKeyPress = (e) => {

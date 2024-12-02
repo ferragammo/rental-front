@@ -17,7 +17,7 @@ export const sendMessage = async (token, chatId, chatValue, updateMessages, file
 
         console.log(fileData)
 
-        if (fileData) {
+        if (fileData && fileData.name && fileData.base64String) {
             body.file = {
                 name: fileData.name,
                 base64String: fileData.base64String,
