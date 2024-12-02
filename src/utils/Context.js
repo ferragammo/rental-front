@@ -19,40 +19,47 @@ const AppContext = ({ children }) => {
     );
     const [message, setMessage] = useState([
         {
+            file: {
+                name: '',
+                base64String: '',
+            },
+
             text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI. My primary function is to assist users in generating human-like text based on the prompts and questions I receive. I have been trained on a diverse range of internet text up until September 2021, so I can provide information, answer questions, engage in conversations, offer suggestions, and more on a wide array of topics. Please feel free to ask me anything or let me know how I can assist you today!",
             isBot: true,
         },
     ]);
-    const [selectedChat, setSelectedChat] = useState(null);
-    const msgEnd = useRef(null);
+    const [fileData, setFileData] = useState(null);
 
+    useEffect(() => {
+        console.log(fileData);
+    }, [fileData]);
+
+    const [selectedChat, setSelectedChat] = useState(null);
+    //'674d7f4eed4768a959ab111c'
+    const msgEnd = useRef(null);
 
     useEffect(() => {
         if (msgEnd.current) {
-            msgEnd.current.scrollIntoView({ behavior: "smooth" });
+            msgEnd.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [message]);
 
-    const loadChatMessages = async () => {
+    const loadChatMessages = async (chatId) => {
+        const token = Cookies.get('accessToken');
 
-      const token = Cookies.get('accessToken');
-      console.log(selectedChat)
-      // const chatId = '674c5c9fed4768a959ab0f3e';
-      if (selectedChat) {
-          const result = await getAllChatMessages(token, selectedChat);
-          console.log(result);
+        const result = await getAllChatMessages(token, chatId);
+        console.log(result);
 
-          // Преобразуем сообщения в формат, который подходит для state
+        // Преобразуем сообщения в формат, который подходит для state
+        if (result) {
+            const formattedMessages = result.data.map((msg) => ({
+                text: msg.text,
+                isBot: msg.author === 'assistant', // Используем значение авторов для определения isBot
+            }));
 
-          const formattedMessages = result.data.map((msg) => ({
-              text: msg.text,
-              isBot: msg.author === 'assistant', // Используем значение авторов для определения isBot
-          }));
-
-          setMessage(formattedMessages);
-      }
-  };
-
+            setMessage(formattedMessages);
+        }
+    };
 
     // button Click function
     const handleSend = async () => {
@@ -60,9 +67,14 @@ const AppContext = ({ children }) => {
         setChatValue('');
         setMessage((prevMessages) => [...prevMessages, { text, isBot: false }]);
         const token = Cookies.get('accessToken');
-        const chatId = '674c5c9fed4768a959ab0f3e';
+        //const chatId = '674c5c9fed4768a959ab0f3e';
         // Отправка сообщения и обновление UI с постепенной подгрузкой
-        await sendMessage(token, selectedChat, text, setMessage);
+        if (!fileData) {
+            await sendMessage(token, selectedChat, text, setMessage);
+        } else {
+            console.log(fileData);
+            await sendMessage(token, selectedChat, text, setMessage, fileData);
+        }
     };
     // Enter Click function
     const handleKeyPress = (e) => {
@@ -84,43 +96,41 @@ const AppContext = ({ children }) => {
     };
 
     const selectedChatById = async (chatId) => {
-      try {
-          const token = Cookies.get('accessToken');
-          if (!token) {
-              console.error('Token not found');
-              return;
-          }
-          const chat = await getChatById(chatId, token);
-          if (chat) {
-             
-              setSelectedChat(chatId);  // Обновляем selectedChat
-          }
-      } catch (error) {
-          console.error('Error fetching chat by ID:', error.message);
-      }
-  };
-  
+        try {
+            const token = Cookies.get('accessToken');
+            if (!token) {
+                console.error('Token not found');
+                return;
+            }
+            const chat = await getChatById(chatId, token);
+            if (chat) {
+                setSelectedChat(chatId); // Обновляем selectedChat
+                loadChatMessages(chatId);
+            }
+        } catch (error) {
+            console.error('Error fetching chat by ID:', error.message);
+        }
+    };
 
+    const getAllChats = async () => {
+        try {
+            const token = Cookies.get('accessToken');
+            if (!token) {
+                return { account: null, statusCode: 401 };
+            }
+            const response = await getChats(token, 0, 10);
+            if (response.data) {
+                setChats(response.data);
+            } else {
+                console.log(response.error);
+            }
+        } catch (error) {
+            console.log(error.message || 'Ошибка при загрузке чатов');
+        }
+    };
     useEffect(() => {
-      const getAllChats = async () => {
-          try {
-              const token = Cookies.get('accessToken');
-              if (!token) {
-                  return { account: null, statusCode: 401 };
-              }
-              const response = await getChats(token, 0, 10);
-              if (response.data) {
-                  setChats(response.data); 
-              } else {
-                  console.log(response.error);
-              }
-          } catch (error) {
-              console.log(error.message || 'Ошибка при загрузке чатов');
-          }
-      };
-      getAllChats();
-  }, []); 
-  
+        getAllChats();
+    }, []);
 
     useEffect(() => {
         const fetchAccountType = async () => {
@@ -161,7 +171,9 @@ const AppContext = ({ children }) => {
                 setSelectedModel,
                 setSelectedChat,
                 selectedChat,
-                selectedChatById
+                selectedChatById,
+                setFileData,
+                getAllChats,
             }}
         >
             {children}

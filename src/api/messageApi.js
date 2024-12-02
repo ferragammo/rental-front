@@ -1,16 +1,37 @@
 import api from './index';
 
-export const sendMessage = async (token, chatId, chatValue, updateMessages) => {
+export const sendMessage = async (token, chatId, chatValue, updateMessages, fileData={},) => {
     try {
-        const response = await fetch(`https://brestok-hector-demo-backend.hf.space/api/message/${chatId}`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',  
-                'Accept': 'text/event-stream', 
-            },
-            body: JSON.stringify({ text: chatValue }),
-        });
+        const headers = {
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
+        };
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const body = {
+            text: chatValue,
+        };
+
+        console.log(fileData)
+
+        if (fileData) {
+            body.file = {
+                name: fileData.name,
+                base64String: fileData.base64String,
+            };
+        }
+
+        const response = await fetch(
+            `https://brestok-hector-demo-backend.hf.space/api/message/${chatId}`,
+            {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(body),
+            }
+        );
 
         if (!response.ok) {
             throw new Error('Network response was not ok');
@@ -33,7 +54,7 @@ export const sendMessage = async (token, chatId, chatValue, updateMessages) => {
             const chunk = decoder.decode(value, { stream: true });
 
             if (chunk.trim()) {
-                const chunkParts = chunk.split(/(?=data:)/).filter(Boolean); 
+                const chunkParts = chunk.split(/(?=data:)/).filter(Boolean);
 
                 chunkParts.forEach((part) => {
                     chunkQueue.push(part.trim());
@@ -43,16 +64,23 @@ export const sendMessage = async (token, chatId, chatValue, updateMessages) => {
                     const currentChunk = chunkQueue.shift();
 
                     try {
-                        const cleanChunk = currentChunk.replace(/^data:\s*/, '').trim();
+                        const cleanChunk = currentChunk
+                            .replace(/^data:\s*/, '')
+                            .trim();
                         const parsedChunk = JSON.parse(cleanChunk);
 
                         currentText += parsedChunk.data.text;
 
                         updateMessages((prevMessages) => {
-                            const lastMessage = prevMessages[prevMessages.length - 1];
+                            const lastMessage =
+                                prevMessages[prevMessages.length - 1];
                             return [
                                 ...prevMessages.slice(0, -1),
-                                { ...lastMessage, text: currentText, isBot: true },
+                                {
+                                    ...lastMessage,
+                                    text: currentText,
+                                    isBot: true,
+                                },
                             ];
                         });
                     } catch (e) {
@@ -73,11 +101,6 @@ export const sendMessage = async (token, chatId, chatValue, updateMessages) => {
         ]);
     }
 };
-
-
-
-
-
 
 export const getAllChatMessages = async (token, chatId) => {
     try {

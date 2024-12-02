@@ -14,3 +14,12 @@
   background-color: rgb(70, 70, 70); /* color of the scroll thumb */
   border-radius: 8px; /* roundness of the scroll thumb */
 }
+.group h3 {
+  margin-top: 1rem; /* Пример */
+  margin-bottom: 1rem;
+}
+
+.group p {
+  margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
+}
