@@ -8,7 +8,6 @@ import { createChat, getChatById, getChats } from '../api/chatApi';
 export const ContextApp = createContext();
 
 const AppContext = ({ children }) => {
-
     const [showSlide, setShowSlide] = useState(false);
     const [Mobile, setMobile] = useState(false);
     const [chats, setChats] = useState([]);
@@ -39,33 +38,43 @@ const AppContext = ({ children }) => {
     //'674d7f4eed4768a959ab111c'
     const msgEnd = useRef(null);
 
-
-
-  useEffect(() => {
-    if (msgEnd.current) {
-      msgEnd.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [message]);
-
+    useEffect(() => {
+        if (msgEnd.current) {
+            msgEnd.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [message]);
 
     const loadChatMessages = async (chatId) => {
         const token = Cookies.get('accessToken');
+      
+            if (chatId) {
+                const result = await getAllChatMessages(token, chatId);
+                console.log(result);
 
-        const result = await getAllChatMessages(token, chatId);
-        console.log(result);
+                // Преобразуем сообщения в формат, который подходит для state
+                if (result) {
+                    const formattedMessages = result.data.map((msg) => ({
+                        text: msg.text,
+                        isBot: msg.author === 'assistant', // Используем значение авторов для определения isBot
+                    }));
 
-        // Преобразуем сообщения в формат, который подходит для state
-        if (result) {
-            const formattedMessages = result.data.map((msg) => ({
-                text: msg.text,
-                isBot: msg.author === 'assistant', // Используем значение авторов для определения isBot
-            }));
-
-            setMessage(formattedMessages);
-        }
+                    setMessage(formattedMessages);
+                }
+            } else {
+                setMessage([  {
+                    file: {
+                        name: '',
+                        base64String: '',
+                    },
+        
+                    text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI. My primary function is to assist users in generating human-like text based on the prompts and questions I receive. I have been trained on a diverse range of internet text up until September 2021, so I can provide information, answer questions, engage in conversations, offer suggestions, and more on a wide array of topics. Please feel free to ask me anything or let me know how I can assist you today!",
+                    isBot: true,
+                }])
+            }
+    
     };
 
-  // button Click function
+    // button Click function
     const handleSend = async () => {
         const text = chatValue;
         setChatValue('');
@@ -73,29 +82,46 @@ const AppContext = ({ children }) => {
         const token = Cookies.get('accessToken');
         if (!selectedChat) {
             try {
-              const newChat = await createChat(selectedModel, token || null);
-              if (newChat) {
-                setSelectedChat(newChat.data.id);
-                 if (!fileData) {
-                  await sendMessage(token, newChat.data.id, text, setMessage);
-              } else {
-                  console.log(fileData);
-                  await sendMessage(token, newChat.data.id, text, setMessage, fileData);
-              }
-              } else {
-                console.error('Failed to create a new chat');
-              }
+                const newChat = await createChat(selectedModel, token || null);
+                if (newChat) {
+                    setSelectedChat(newChat.data.id);
+                    if (!fileData) {
+                        await sendMessage(
+                            token,
+                            newChat.data.id,
+                            text,
+                            setMessage
+                        );
+                    } else {
+                        console.log(fileData);
+                        await sendMessage(
+                            token,
+                            newChat.data.id,
+                            text,
+                            setMessage,
+                            fileData
+                        );
+                    }
+                } else {
+                    console.error('Failed to create a new chat');
+                }
             } catch (error) {
-              console.error('Error creating new chat:', error);
+                console.error('Error creating new chat:', error);
             }
-          } else {
-             if (!fileData) {
-                  await sendMessage(token, selectedChat, text, setMessage);
-              } else {
-                  console.log(fileData);
-                  await sendMessage(token, selectedChat, text, setMessage, fileData);
-              }
-          }
+        } else {
+            if (!fileData) {
+                await sendMessage(token, selectedChat, text, setMessage);
+            } else {
+                console.log(fileData);
+                await sendMessage(
+                    token,
+                    selectedChat,
+                    text,
+                    setMessage,
+                    fileData
+                );
+            }
+        }
     };
     // Enter Click function
     const handleKeyPress = (e) => {
@@ -104,22 +130,19 @@ const AppContext = ({ children }) => {
         }
     };
 
+    // Query Click function
+    const handleQuery = async (e) => {
+        const text = e.target.innerText;
+        setMessage([...message, { text, isBot: false }]);
+        // const res = await sendMsgToAI(text);
+        // setMessage([
+        //   ...message,
+        //   { text, isBot: false },
+        //   { text: res, isBot: true },
+        // ]);
+    };
 
-
-  // Query Click function
-  const handleQuery = async (e) => {
-    const text = e.target.innerText;
-    setMessage([...message, { text, isBot: false }]);
-    // const res = await sendMsgToAI(text);
-    // setMessage([
-    //   ...message,
-    //   { text, isBot: false },
-    //   { text: res, isBot: true },
-    // ]);
-  };
-
-
-  const selectedChatById = async (chatId) => {
+    const selectedChatById = async (chatId) => {
         try {
             const token = Cookies.get('accessToken');
             if (!token) {
@@ -135,7 +158,6 @@ const AppContext = ({ children }) => {
             console.error('Error fetching chat by ID:', error.message);
         }
     };
-
 
     const getAllChats = async () => {
         try {
@@ -204,6 +226,5 @@ const AppContext = ({ children }) => {
             {children}
         </ContextApp.Provider>
     );
-
 };
 export default AppContext;
