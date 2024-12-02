@@ -118,12 +118,6 @@ const AppContext = ({ children }) => {
     };
 
 
- 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSend();
-    }
-  };
 
   // Query Click function
   const handleQuery = async (e) => {
