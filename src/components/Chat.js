@@ -1,13 +1,9 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { ContextApp } from '../utils/Context';
 
 function Chat() {
-  const { message, msgEnd, loadChatMessages, selectedChat } = useContext(ContextApp);
-  useEffect(() => {
-    if (selectedChat) {
-      loadChatMessages(); 
-    }
-  }, [selectedChat]); 
+  const { message, msgEnd } = useContext(ContextApp);
+
   return (
     <div className=" w-full flex items-center justify-center overflow-hidden overflow-y-auto px-2 py-1 scroll">
       <div className="w-full lg:w-4/5 flex flex-col h-full items-start justify-start">

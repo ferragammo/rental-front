@@ -3,169 +3,181 @@ import { getAccount } from '../api/accountApi';
 import { ChatModelType } from '../static/enums/ChatModelType';
 import Cookies from 'js-cookie';
 import { getAllChatMessages, sendMessage } from '../api/messageApi';
-import { getChatById, getChats } from '../api/chatApi';
+import { createChat, getChatById, getChats } from '../api/chatApi';
 
 export const ContextApp = createContext();
 
 const AppContext = ({ children }) => {
-    const [showSlide, setShowSlide] = useState(false);
-    const [Mobile, setMobile] = useState(false);
-    const [chats, setChats] = useState([]);
-    const [chatValue, setChatValue] = useState('');
-    const [account, setAccount] = useState('');
-    const [status, setStatus] = useState('');
-    const [selectedModel, setSelectedModel] = useState(
-        ChatModelType.gpt_4o_mini
-    );
-    const [message, setMessage] = useState([
-        {
-            text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI. My primary function is to assist users in generating human-like text based on the prompts and questions I receive. I have been trained on a diverse range of internet text up until September 2021, so I can provide information, answer questions, engage in conversations, offer suggestions, and more on a wide array of topics. Please feel free to ask me anything or let me know how I can assist you today!",
-            isBot: true,
-        },
-    ]);
-    const [selectedChat, setSelectedChat] = useState(null);
-    const msgEnd = useRef(null);
+  const [showSlide, setShowSlide] = useState(false);
+  const [Mobile, setMobile] = useState(false);
+  const [chats, setChats] = useState([]);
+  const [chatValue, setChatValue] = useState('');
+  const [account, setAccount] = useState('');
+  const [status, setStatus] = useState('');
+  const [selectedModel, setSelectedModel] = useState(ChatModelType.gpt_4o_mini);
+  const [message, setMessage] = useState([
+    {
+      text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI. My primary function is to assist users in generating human-like text based on the prompts and questions I receive. I have been trained on a diverse range of internet text up until September 2021, so I can provide information, answer questions, engage in conversations, offer suggestions, and more on a wide array of topics. Please feel free to ask me anything or let me know how I can assist you today!",
+      isBot: true,
+    },
+  ]);
+  const [selectedChat, setSelectedChat] = useState(null);
+  const msgEnd = useRef(null);
+
+  useEffect(() => {
+    if (msgEnd.current) {
+      msgEnd.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [message]);
 
 
-    useEffect(() => {
-        if (msgEnd.current) {
-            msgEnd.current.scrollIntoView({ behavior: "smooth" });
+  const loadChatMessages = async (token) => {
+    if (selectedChat && token) {
+        const result = await getAllChatMessages(token, selectedChat);
+        console.log(result);
+        if (result) {
+            const formattedMessages = result.data.map((msg) => ({
+                text: msg.text,
+                isBot: msg.author === 'assistant', // Используем значение авторов для определения isBot
+            }));
+
+            setMessage(formattedMessages);
         }
-    }, [message]);
-
-    const loadChatMessages = async () => {
-
-      const token = Cookies.get('accessToken');
-      console.log(selectedChat)
-      // const chatId = '674c5c9fed4768a959ab0f3e';
-      if (selectedChat) {
-          const result = await getAllChatMessages(token, selectedChat);
-          console.log(result);
-
-          // Преобразуем сообщения в формат, который подходит для state
-
-          const formattedMessages = result.data.map((msg) => ({
-              text: msg.text,
-              isBot: msg.author === 'assistant', // Используем значение авторов для определения isBot
-          }));
-
-          setMessage(formattedMessages);
-      }
-  };
+    }
+};
 
 
-    // button Click function
-    const handleSend = async () => {
-        const text = chatValue;
-        setChatValue('');
-        setMessage((prevMessages) => [...prevMessages, { text, isBot: false }]);
-        const token = Cookies.get('accessToken');
-        const chatId = '674c5c9fed4768a959ab0f3e';
-        // Отправка сообщения и обновление UI с постепенной подгрузкой
-        await sendMessage(token, selectedChat, text, setMessage);
-    };
-    // Enter Click function
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            handleSend();
-        }
-    };
-
-    // Query Click function
-    const handleQuery = async (e) => {
-        const text = e.target.innerText;
-        setMessage([...message, { text, isBot: false }]);
-        // const res = await sendMsgToAI(text);
-        // setMessage([
-        //   ...message,
-        //   { text, isBot: false },
-        //   { text: res, isBot: true },
-        // ]);
-    };
-
-    const selectedChatById = async (chatId) => {
+  const createChatAndSendMessage = async (text) => {
+    const token = Cookies.get('accessToken');
+    if (!selectedChat) {
       try {
-          const token = Cookies.get('accessToken');
-          if (!token) {
-              console.error('Token not found');
-              return;
-          }
-          const chat = await getChatById(chatId, token);
-          if (chat) {
-             
-              setSelectedChat(chatId);  // Обновляем selectedChat
-          }
+        const newChat = await createChat(selectedModel, token || null);
+        if (newChat) {
+          setSelectedChat(newChat.data.id);
+          await sendMessage(token || null, newChat.data.id, text, setMessage);
+        } else {
+          console.error('Failed to create a new chat');
+        }
       } catch (error) {
-          console.error('Error fetching chat by ID:', error.message);
+        console.error('Error creating new chat:', error);
       }
+    } else {
+      await sendMessage(token || null, selectedChat, text, setMessage);
+    }
   };
-  
 
-    useEffect(() => {
-      const getAllChats = async () => {
-          try {
-              const token = Cookies.get('accessToken');
-              if (!token) {
-                  return { account: null, statusCode: 401 };
-              }
-              const response = await getChats(token, 0, 10);
-              if (response.data) {
-                  setChats(response.data); 
-              } else {
-                  console.log(response.error);
-              }
-          } catch (error) {
-              console.log(error.message || 'Ошибка при загрузке чатов');
-          }
-      };
-      getAllChats();
-  }, []); 
-  
 
-    useEffect(() => {
-        const fetchAccountType = async () => {
-            try {
-                const { account, statusCode } = await getAccount();
-                if (account) {
-                    setAccount(account);
-                }
-                setStatus(statusCode);
-            } catch (error) {
-                setAccount(null);
-                setStatus(null);
-            }
-        };
+  const handleSend = async () => {
+    const text = chatValue;
+    setChatValue('');
+    setMessage((prevMessages) => [...prevMessages, { text, isBot: false }]);
+    await createChatAndSendMessage(text);
+    getAllChats()
+  };
 
-        fetchAccountType();
-    }, []);
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSend();
+    }
+  };
 
-    return (
-        <ContextApp.Provider
-            value={{
-                showSlide,
-                setShowSlide,
-                Mobile,
-                setMobile,
-                chatValue,
-                setChatValue,
-                handleSend,
-                message,
-                chats,
-                msgEnd,
-                handleKeyPress,
-                handleQuery,
-                account,
-                status,
-                loadChatMessages,
-                selectedModel,
-                setSelectedModel,
-                setSelectedChat,
-                selectedChat,
-                selectedChatById
-            }}
-        >
-            {children}
-        </ContextApp.Provider>
-    );
+  // Query Click function
+  const handleQuery = async (e) => {
+    const text = e.target.innerText;
+    setMessage([...message, { text, isBot: false }]);
+    // const res = await sendMsgToAI(text);
+    // setMessage([
+    //   ...message,
+    //   { text, isBot: false },
+    //   { text: res, isBot: true },
+    // ]);
+  };
+
+  const selectedChatById = async (chatId) => {
+    try {
+        const token = Cookies.get('accessToken');
+        if (!token) {
+            console.error('Token not found');
+            return;
+        }
+        const chat = await getChatById(chatId, token);
+        if (chat) {
+            setSelectedChat(chatId); 
+            loadChatMessages(chatId)
+        }
+    } catch (error) {
+        console.error('Error fetching chat by ID:', error.message);
+    }
+};
+
+
+  const getAllChats = async () => {
+    try {
+      const token = Cookies.get('accessToken');
+      if (!token) {
+        return { account: null, statusCode: 401 };
+      }
+      const response = await getChats(token, 0, 10);
+      if (response.data) {
+        setChats(response.data);
+      } else {
+        console.log(response.error);
+      }
+    } catch (error) {
+      console.log(error.message || 'Ошибка при загрузке чатов');
+    }
+  };
+
+  useEffect(() => {
+    getAllChats()
+  }, []);  
+
+
+  useEffect(() => {
+    const fetchAccountType = async () => {
+      try {
+        const { account, statusCode } = await getAccount();
+        if (account) {
+          setAccount(account);
+        }
+        setStatus(statusCode);
+      } catch (error) {
+        setAccount(null);
+        setStatus(null);
+      }
+    };
+
+    fetchAccountType();
+  }, []);
+
+  return (
+    <ContextApp.Provider
+      value={{
+        showSlide,
+        setShowSlide,
+        Mobile,
+        setMobile,
+        chatValue,
+        setChatValue,
+        handleSend,
+        message,
+        chats,
+        msgEnd,
+        handleKeyPress,
+        handleQuery,
+        account,
+        status,
+        loadChatMessages,
+        selectedModel,
+        setSelectedModel,
+        setSelectedChat,
+        selectedChat,
+        selectedChatById,
+        getAllChats,
+      }}
+    >
+      {children}
+    </ContextApp.Provider>
+  );
 };
 export default AppContext;

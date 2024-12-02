@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { loginUser, registerUser } from '../api/securityApi';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
+import { ContextApp } from '../utils/Context';
 
 const AuthForm = ({ isLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [errors, setErrors] = useState({ email: false, password: false });
+  const { getAllChats } = useContext(ContextApp);
 
   const navigate = useNavigate();
 
@@ -39,7 +41,10 @@ const AuthForm = ({ isLogin }) => {
               path: '/',
             });
           }
-          navigate("/");
+
+          getAllChats();
+
+          navigate('/');
         } else {
           const status = result.error?.status;
           if (status === 403) {
@@ -58,7 +63,7 @@ const AuthForm = ({ isLogin }) => {
         const result = await registerUser(email, password);
 
         if (result.successful) {
-          navigate("/auth/login")
+          navigate('/auth/login');
         } else {
           setError(result.error?.message || 'Registration failed');
         }
@@ -92,9 +97,7 @@ const AuthForm = ({ isLogin }) => {
           className={`bg-[#272729] ${
             email ? 'bg-[#232938]' : ''
           } text-white p-2.5 rounded-md text-sm w-full ${
-            errors.email || error
-              ? 'bg-red-500 bg-opacity-30'
-              : 'bg-[#232938]'
+            errors.email || error ? 'bg-red-500 bg-opacity-30' : 'bg-[#232938]'
           } focus:bg-[#232938] focus:outline-none mb-4`}
         />
       </div>

@@ -84,15 +84,14 @@ export const deleteChat = async (chatId, token) => {
 
 export const createChat = async (model, token) => {
   try {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};  // Если токен существует, добавляем в заголовки, если нет - не добавляем
+    
     const response = await api.post(
       '/api/chat',
       { model },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      { headers }  // Используем динамически созданные заголовки
     );
+    
     if (response?.data?.successful) {
       return response.data;
     } else {
