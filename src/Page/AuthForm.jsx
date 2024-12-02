@@ -11,6 +11,7 @@ const AuthForm = ({ isLogin }) => {
   const [errors, setErrors] = useState({ email: false, password: false });
   const { getAllChats } = useContext(ContextApp);
 
+  const { setMessage, getAllChats } = useContext(ContextApp);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -41,10 +42,17 @@ const AuthForm = ({ isLogin }) => {
               path: '/',
             });
           }
+          navigate("/");
+          getAllChats()
+          setMessage(  {
+            file: {
+                name: '',
+                base64String: '',
+            },
 
-          getAllChats();
-
-          navigate('/');
+            text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI. My primary function is to assist users in generating human-like text based on the prompts and questions I receive. I have been trained on a diverse range of internet text up until September 2021, so I can provide information, answer questions, engage in conversations, offer suggestions, and more on a wide array of topics. Please feel free to ask me anything or let me know how I can assist you today!",
+            isBot: true,
+        },)
         } else {
           const status = result.error?.status;
           if (status === 403) {
