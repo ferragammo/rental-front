@@ -9,8 +9,7 @@ const AuthForm = ({ isLogin }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [errors, setErrors] = useState({ email: false, password: false });
-  const { getAllChats } = useContext(ContextApp);
-
+  
   const { setMessage, getAllChats } = useContext(ContextApp);
   const navigate = useNavigate();
 
