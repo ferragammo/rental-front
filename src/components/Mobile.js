@@ -141,7 +141,7 @@ function Mobile() {
         <div className="flex items-center justify-between w-full">
         <span className="text-xl font-semibold">Chatbot</span>
         <button
-          className="rounded px-3 py-[9px] hidden lg:flex items-center justify-center cursor-pointer text-white m-1 hover:bg-gray-600 duration-200"
+          className="rounded px-3 py-[9px] flex items-center justify-center cursor-pointer text-white m-1 hover:bg-gray-600 duration-200"
           onClick={handleCreateChat}
         >
           <AiOutlinePlus fontSize={16} />
