@@ -19,9 +19,12 @@ function LeftNav() {
     showSlide,
     getAllChats,
     chats,
+    setChats,
     setSelectedChat,
     selectedChat,
     selectedChatById,
+    loadChatMessages,
+    setMessage
   } = useContext(ContextApp);
 
   const handleSelectChat = (chatId) => {
@@ -29,6 +32,8 @@ function LeftNav() {
   };
 
   function handleLogout() {
+    setSelectedChat(null);
+    setChats([])
     Cookies.remove('accessToken', {
       path: '/',
     });
@@ -81,6 +86,20 @@ function LeftNav() {
       const response = await deleteChat(chatId, token);
       if (response.successful) {
         console.log('Chat deleted successfully:', response);
+        setSelectedChat(null);
+        setIsModalOpen(false);
+        setSelectedChatId(null);
+        loadChatMessages(null)
+        setMessage([
+          {
+            file: {
+              name: '',
+              base64String: '',
+            },
+            text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI...",
+            isBot: true,
+          },
+        ]);
       } else {
         console.error('Error deleting chat:', response.message);
         alert(`Error: ${response.message}`);
@@ -104,7 +123,7 @@ function LeftNav() {
       const response = await createChat(selectedModel, token);
       if (response.successful) {
         console.log('Chat created:', response);
-        setSelectedChat(response.data.id); 
+        setSelectedChat(response.data.id);
         selectedChatById(response.data.id);
       } else {
         console.error('Error creating chat:', response.message);
@@ -115,6 +134,8 @@ function LeftNav() {
     }
     getAllChats();
   };
+
+  const isLoggedIn = !!Cookies.get('accessToken');
 
   return (
     <div
@@ -179,7 +200,12 @@ function LeftNav() {
           <p>No chats available</p>
         )}
       </div>
-      <button onClick={handleLogout} className='text-lg font-geist bg-[#212121] duration-300 truncate mb-2 hover:bg-[#2c2b2b] py-3 rounded-lg w-full'>Log Out</button>
+      <button
+        onClick={isLoggedIn ? handleLogout : () => navigate('/auth/login')}
+        className="text-lg font-geist bg-[#212121] duration-300 truncate mb-2 hover:bg-[#2c2b2b] py-3 rounded-lg w-full"
+      >
+        {isLoggedIn ? 'Log Out' : 'Log In'}
+      </button>
 
       <ModalMore
         isOpen={isModalOpen}

@@ -108,6 +108,7 @@ const AppContext = ({ children }) => {
             } catch (error) {
                 console.error('Error creating new chat:', error);
             }
+            getAllChats()
         } else {
             if (!fileData) {
                 await sendMessage(token, selectedChat, text, setMessage);
@@ -221,6 +222,7 @@ const AppContext = ({ children }) => {
                 selectedChatById,
                 setFileData,
                 getAllChats,
+                setChats
             }}
         >
             {children}

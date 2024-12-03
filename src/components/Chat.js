@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
 import { ContextApp } from '../utils/Context';
 import ReactMarkdown from 'react-markdown';
-import Cookies from 'js-cookie';
+import { AiOutlineUser } from 'react-icons/ai';
+
 
 function Chat() {
   const { message, msgEnd } = useContext(ContextApp);
@@ -19,11 +20,19 @@ function Chat() {
                 : 'flex items-start justify-center gap-2 lg:gap-5 my-2 p-3'
             }
           >
-            <img
-              src={msg.isBot ? '/icon.png' : '/user.jpeg'}
-              alt="user"
-              className="w-10 h-10 rounded object-cover"
-            />
+             {msg.isBot ? (
+              <img
+                src="/icon.png"
+                alt="bot"
+                className="w-10 h-10 rounded object-cover"
+              />
+            ) : (
+              <div
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-500 text-white font-bold"
+              >
+                <AiOutlineUser size={24}/>
+              </div>
+            )}
             <p className="text-white text-[15px] group"> <ReactMarkdown>{msg?.text}</ReactMarkdown></p>
           </span>
         ))}
