@@ -55,6 +55,10 @@ const AppContext = ({ children }) => {
                 const formattedMessages = result.data.map((msg) => ({
                     text: msg.text,
                     isBot: msg.author === 'assistant',
+                    file: msg.file ? {
+                        name: msg.file.name,
+                        base64String: msg.file.base64String,
+                    } : null,
                 }));
 
                 setMessage(formattedMessages);
