@@ -25,7 +25,7 @@ const AppContext = ({ children }) => {
                 base64String: '',
             },
 
-            text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI. My primary function is to assist users in generating human-like text based on the prompts and questions I receive. I have been trained on a diverse range of internet text up until September 2021, so I can provide information, answer questions, engage in conversations, offer suggestions, and more on a wide array of topics. Please feel free to ask me anything or let me know how I can assist you today!",
+            text: "Hello! I'm Hector, your search assistant specializing in CNC technology and industrial products here at the Hectool marketplace. We offer a wide range of products and expert recommendations to simplify your search. What are you looking for?",
             isBot: true,
         },
     ]);
@@ -74,7 +74,7 @@ const AppContext = ({ children }) => {
                         base64String: '',
                     },
         
-                    text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI. My primary function is to assist users in generating human-like text based on the prompts and questions I receive. I have been trained on a diverse range of internet text up until September 2021, so I can provide information, answer questions, engage in conversations, offer suggestions, and more on a wide array of topics. Please feel free to ask me anything or let me know how I can assist you today!",
+                    text: "Hello! I'm Hector, your search assistant specializing in CNC technology and industrial products here at the Hectool marketplace. We offer a wide range of products and expert recommendations to simplify your search. What are you looking for?",
                     isBot: true,
                 }])
             }
@@ -91,7 +91,7 @@ const AppContext = ({ children }) => {
                 {
                     text,
                     isBot: false,
-                    file: fileData // Добавляем информацию о файле
+                    file: fileData 
                 }
             ]);
         } else {
@@ -124,6 +124,7 @@ const AppContext = ({ children }) => {
          
                             fileData
                         );
+                        setFileData(null);
                     }
                 } else {
                     console.error('Failed to create a new chat');
@@ -138,21 +139,25 @@ const AppContext = ({ children }) => {
                 await sendMessage(token, selectedChat, text, setMessage);
             } else {
                 console.log(fileData);
+                const sendFileData= fileData;
+                setFileData(null)
                 await sendMessage(
                     token,
                     selectedChat,
                     text,
                     setMessage,
 
-                    fileData
+                    sendFileData
                 );
+                
             }
         }
     };
     // Enter Click function
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
-            handleSend();
+            if(chatValue.trim() !== '' || fileData) {
+            handleSend();}
         }
     };
 
@@ -247,6 +252,7 @@ const AppContext = ({ children }) => {
                 selectedChatById,
                 setFileData,
                 getAllChats,
+                fileData,
        setChats
 
             }}

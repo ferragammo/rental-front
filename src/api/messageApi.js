@@ -30,7 +30,7 @@ export const sendMessage = async (token, chatId, chatValue, updateMessages, file
         ]);
 
         const response = await fetch(
-            `https://brestok-hector-demo-backend.hf.space/api/message/${chatId}`,
+            `${process.env.REACT_APP_DEV_API_URL}api/message/${chatId}`,
             {
                 method: 'POST',
                 headers: headers,

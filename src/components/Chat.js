@@ -3,10 +3,8 @@ import { ContextApp } from '../utils/Context';
 import ReactMarkdown from 'react-markdown';
 import { AiOutlineUser } from 'react-icons/ai';
 
-
 function Chat() {
     const { message, msgEnd } = useContext(ContextApp);
-
 
     return (
         <div className=' w-full flex items-center justify-center overflow-hidden overflow-y-auto px-2 py-1 scroll'>
@@ -20,19 +18,17 @@ function Chat() {
                                     : 'flex items-start justify-center gap-2 lg:gap-5 my-2 p-3'
                             }
                         >
-                             {msg.isBot ? (
-              <img
-                src="/icon.png"
-                alt="bot"
-                className="w-10 h-10 rounded object-cover"
-              />
-            ) : (
-              <div
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-500 text-white font-bold"
-              >
-                <AiOutlineUser size={24}/>
-              </div>
-            )}
+                            {msg.isBot ? (
+                                <img
+                                    src='/icon.png'
+                                    alt='bot'
+                                    className='w-10 h-10 rounded object-cover'
+                                />
+                            ) : (
+                                <div className='w-10 h-10 flex items-center justify-center rounded-lg bg-blue-500 text-white font-bold'>
+                                    <AiOutlineUser size={24} />
+                                </div>
+                            )}
                             <div>
                                 {msg.file && msg.file.base64String && (
                                     <div>
@@ -47,8 +43,7 @@ function Chat() {
                                         )}
                                     </div>
                                 )}
-                                <p className='text-white text-[15px] group'>
-                                    {' '}
+                                <p className='text-white text-[15px] group px-3'>
                                     <ReactMarkdown>{msg?.text}</ReactMarkdown>
                                 </p>
                             </div>
