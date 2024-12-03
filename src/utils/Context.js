@@ -8,80 +8,84 @@ import { createChat, getChatById, getChats } from '../api/chatApi';
 export const ContextApp = createContext();
 
 const AppContext = ({ children }) => {
-    const [showSlide, setShowSlide] = useState(false);
-    const [Mobile, setMobile] = useState(false);
-    const [chats, setChats] = useState([]);
-    const [chatValue, setChatValue] = useState('');
-    const [account, setAccount] = useState('');
-    const [status, setStatus] = useState('');
+  const [showSlide, setShowSlide] = useState(false);
+  const [Mobile, setMobile] = useState(false);
+  const [chats, setChats] = useState([]);
+  const [chatValue, setChatValue] = useState('');
+  const [account, setAccount] = useState('');
+  const [status, setStatus] = useState('');
+  const [selectedModel, setSelectedModel] = useState(ChatModelType.gpt_4o_mini);
+  const [message, setMessage] = useState([
+    {
+      file: {
+        name: '',
+        base64String: '',
+      },
 
-    const [selectedModel, setSelectedModel] = useState(
-        ChatModelType.gpt_4o_mini
-    );
-    const [message, setMessage] = useState([
-        {
+      text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI. My primary function is to assist users in generating human-like text based on the prompts and questions I receive. I have been trained on a diverse range of internet text up until September 2021, so I can provide information, answer questions, engage in conversations, offer suggestions, and more on a wide array of topics. Please feel free to ask me anything or let me know how I can assist you today!",
+      isBot: true,
+    },
+  ]);
+  const [fileData, setFileData] = useState(null);
+
+  useEffect(() => {
+    console.log(fileData);
+  }, [fileData]);
+
+  const [selectedChat, setSelectedChat] = useState(null);
+  //'674d7f4eed4768a959ab111c'
+  const msgEnd = useRef(null);
+
+  useEffect(() => {
+    if (msgEnd.current) {
+      msgEnd.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [message]);
+
+  const loadChatMessages = async (chatId) => {
+    const token = Cookies.get('accessToken');
+
+    if (chatId) {
+      const result = await getAllChatMessages(token, chatId);
+      console.log(result);
+
+      if (result.data.length > 0) {
+        const formattedMessages = result.data.map((msg) => ({
+          text: msg.text,
+          isBot: msg.author === 'assistant',
+        }));
+
+        setMessage(formattedMessages);
+      } else {
+        setMessage([
+          {
             file: {
-                name: '',
-                base64String: '',
+              name: '',
+              base64String: '',
             },
 
             text: "Hello! I'm Hector, your search assistant specializing in CNC technology and industrial products here at the Hectool marketplace. We offer a wide range of products and expert recommendations to simplify your search. What are you looking for?",
             isBot: true,
+            
+               },
+        ]);
+      }
+    } else {
+      setMessage([
+        {
+          file: {
+            name: '',
+            base64String: '',
+          },
+
+          text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI. My primary function is to assist users in generating human-like text based on the prompts and questions I receive. I have been trained on a diverse range of internet text up until September 2021, so I can provide information, answer questions, engage in conversations, offer suggestions, and more on a wide array of topics. Please feel free to ask me anything or let me know how I can assist you today!",
+          isBot: true,
         },
-    ]);
-    const [fileData, setFileData] = useState(null);
-
-    useEffect(() => {
-        console.log(fileData);
-    }, [fileData]);
-
-    const [selectedChat, setSelectedChat] = useState(null);
-    //'674d7f4eed4768a959ab111c'
-    const msgEnd = useRef(null);
-
-    useEffect(() => {
-        if (msgEnd.current) {
-            msgEnd.current.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [message]);
-
-    
-
-    const loadChatMessages = async (chatId) => {
-        const token = Cookies.get('accessToken');
-      
-            if (chatId) {
-                const result = await getAllChatMessages(token, chatId);
-                console.log(result);
-
-                // Преобразуем сообщения в формат, который подходит для state
-                if (result) {
-                    const formattedMessages = result.data.map((msg) => ({
-                        text: msg.text,
-                        isBot: msg.author === 'assistant',
-                        file: msg.file ? {
-                            name: msg.file.name,
-                            base64String: msg.file.base64String,
-                        } : null,
-                    }));
-
-                    setMessage(formattedMessages);
-                }
-            } else {
-                setMessage([  {
-                    file: {
-                        name: '',
-                        base64String: '',
-                    },
-        
-                    text: "Hello! I'm Hector, your search assistant specializing in CNC technology and industrial products here at the Hectool marketplace. We offer a wide range of products and expert recommendations to simplify your search. What are you looking for?",
-                    isBot: true,
-                }])
-            }
-    
-    };
-
-    // button Click function
+      ]);
+    }
+  };
+  
+  // button Click function
     const handleSend = async () => {
         const text = chatValue;
         setChatValue('');
@@ -153,59 +157,66 @@ const AppContext = ({ children }) => {
             }
         }
     };
-    // Enter Click function
+  
+      // Enter Click function
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
             if(chatValue.trim() !== '' || fileData) {
             handleSend();}
+  
+
+
+  const selectedChatById = async (chatId) => {
+    try {
+      const token = Cookies.get('accessToken');
+      if (!token) {
+        console.error('Token not found');
+        return;
+      }
+      const chat = await getChatById(chatId, token);
+      if (chat) {
+        setSelectedChat(chatId);
+        loadChatMessages(chatId);
+      }
+    } catch (error) {
+      console.error('Error fetching chat by ID:', error.message);
+    }
+  };
+
+  const getAllChats = async () => {
+    try {
+      const token = Cookies.get('accessToken');
+      if (!token) {
+        return { account: null, statusCode: 401 };
+      }
+      const response = await getChats(token, 0, 10);
+      if (response.data) {
+        setChats(response.data);
+      } else {
+        console.log(response.error);
+      }
+    } catch (error) {
+      console.log(error.message || 'Ошибка при загрузке чатов');
+    }
+  };
+  useEffect(() => {
+    getAllChats();
+  }, []);
+
+  useEffect(() => {
+    const fetchAccountType = async () => {
+      try {
+        const { account, statusCode } = await getAccount();
+        if (account) {
+          setAccount(account);
         }
+        setStatus(statusCode);
+      } catch (error) {
+        setAccount(null);
+        setStatus(null);
+      }
     };
 
-    // Query Click function
-    const handleQuery = async (e) => {
-        const text = e.target.innerText;
-        setMessage([...message, { text, isBot: false }]);
-        // const res = await sendMsgToAI(text);
-        // setMessage([
-        //   ...message,
-        //   { text, isBot: false },
-        //   { text: res, isBot: true },
-        // ]);
-    };
-
-    const selectedChatById = async (chatId) => {
-        try {
-            const token = Cookies.get('accessToken');
-            if (!token) {
-                console.error('Token not found');
-                return;
-            }
-            const chat = await getChatById(chatId, token);
-            if (chat) {
-                setSelectedChat(chatId); // Обновляем selectedChat
-                loadChatMessages(chatId);
-            }
-        } catch (error) {
-            console.error('Error fetching chat by ID:', error.message);
-        }
-    };
-
-    const getAllChats = async () => {
-        try {
-            const token = Cookies.get('accessToken');
-            if (!token) {
-                return { account: null, statusCode: 401 };
-            }
-            const response = await getChats(token, 0, 10);
-            if (response.data) {
-                setChats(response.data);
-            } else {
-                console.log(response.error);
-            }
-        } catch (error) {
-            console.log(error.message || 'Ошибка при загрузке чатов');
-        }
-    };
     useEffect(() => {
         getAllChats();
     }, []);
@@ -227,38 +238,41 @@ const AppContext = ({ children }) => {
         fetchAccountType();
     }, []);
 
-    return (
-        <ContextApp.Provider
-            value={{
-                showSlide,
-                setShowSlide,
-                Mobile,
-                setMobile,
-                chatValue,
-                setChatValue,
-                handleSend,
-                message,
-                chats,
-                msgEnd,
-                handleKeyPress,
-                handleQuery,
-                account,
-                status,
-                loadChatMessages,
-                selectedModel,
-                setSelectedModel,
-                setSelectedChat,
-                selectedChat,
-                selectedChatById,
-                setFileData,
-                getAllChats,
-                fileData,
-       setChats
+    
 
-            }}
-        >
-            {children}
-        </ContextApp.Provider>
-    );
+
+  return (
+    <ContextApp.Provider
+      value={{
+        showSlide,
+        setShowSlide,
+        Mobile,
+        setMobile,
+        chatValue,
+        setChatValue,
+        handleSend,
+        message,
+        setMessage,
+        chats,
+        msgEnd,
+        handleKeyPress,
+        handleQuery,
+        account,
+        status,
+        loadChatMessages,
+        selectedModel,
+        setSelectedModel,
+        setSelectedChat,
+        selectedChat,
+        selectedChatById,
+        setFileData,
+        getAllChats,
+        setChats,
+    fileData,
+      }}
+    >
+      {children}
+    </ContextApp.Provider>
+  );
 };
 export default AppContext;
