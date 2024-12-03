@@ -64,9 +64,10 @@ const AppContext = ({ children }) => {
               base64String: '',
             },
 
-            text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI. My primary function is to assist users in generating human-like text based on the prompts and questions I receive. I have been trained on a diverse range of internet text up until September 2021, so I can provide information, answer questions, engage in conversations, offer suggestions, and more on a wide array of topics. Please feel free to ask me anything or let me know how I can assist you today!",
+            text: "Hello! I'm Hector, your search assistant specializing in CNC technology and industrial products here at the Hectool marketplace. We offer a wide range of products and expert recommendations to simplify your search. What are you looking for?",
             isBot: true,
-          },
+            
+               },
         ]);
       }
     } else {
@@ -83,64 +84,87 @@ const AppContext = ({ children }) => {
       ]);
     }
   };
-
+  
   // button Click function
-  const handleSend = async () => {
-    const text = chatValue;
-    setChatValue('');
-    setMessage((prevMessages) => [...prevMessages, { text, isBot: false }]);
-    const token = Cookies.get('accessToken');
-    if (!selectedChat) {
-      try {
-        const newChat = await createChat(selectedModel, token || null);
-        if (newChat) {
-          setSelectedChat(newChat.data.id);
-          if (!fileData) {
-            await sendMessage(token, newChat.data.id, text, setMessage);
-          } else {
-            console.log(fileData);
-            await sendMessage(
-              token,
-              newChat.data.id,
-              text,
-              setMessage,
-              fileData
-            );
-          }
+    const handleSend = async () => {
+        const text = chatValue;
+        setChatValue('');
+        if (fileData && fileData.base64String) {
+            setMessage((prevMessages) => [
+                ...prevMessages,
+                {
+                    text,
+                    isBot: false,
+                    file: fileData 
+                }
+            ]);
         } else {
-          console.error('Failed to create a new chat');
+            setMessage((prevMessages) => [
+                ...prevMessages,
+                { text, isBot: false }
+            ]);
         }
-      } catch (error) {
-        console.error('Error creating new chat:', error);
-      }
-      getAllChats();
-    } else {
-      if (!fileData) {
-        await sendMessage(token, selectedChat, text, setMessage);
-      } else {
-        console.log(fileData);
-        await sendMessage(token, selectedChat, text, setMessage, fileData);
-      }
-    }
-  };
-  // Enter Click function
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSend();
-    }
-  };
+        const token = Cookies.get('accessToken');
+        if (!selectedChat) {
+            try {
+                const newChat = await createChat(selectedModel, token || null);
+                if (newChat) {
+                    setSelectedChat(newChat.data.id);
+                    if (!fileData) {
+                        await sendMessage(
+                            token,
+                            newChat.data.id,
+                            text,
+             
+                            setMessage
+                        );
+                    } else {
+                        console.log(fileData);
+                        await sendMessage(
+                            token,
+                            newChat.data.id,
+                            text,
+                            setMessage,
+         
+                            fileData
+                        );
+                        setFileData(null);
+                    }
+                } else {
+                    console.error('Failed to create a new chat');
+                }
+            } catch (error) {
+                console.error('Error creating new chat:', error);
+            }
+            getAllChats()
+        } else {
+            if (!fileData) {
+  
+                await sendMessage(token, selectedChat, text, setMessage);
+            } else {
+                console.log(fileData);
+                const sendFileData= fileData;
+                setFileData(null)
+                await sendMessage(
+                    token,
+                    selectedChat,
+                    text,
+                    setMessage,
 
-  // Query Click function
-  const handleQuery = async (e) => {
-    const text = e.target.innerText;
-    setMessage([...message, { text, isBot: false }]);
-    // const res = await sendMsgToAI(text);
-    // setMessage([
-    //   ...message,
-    //   { text, isBot: false },
-    //   { text: res, isBot: true },
-    // ]);
-  };
+                    sendFileData
+                );
+                
+            }
+        }
+    };
+  
+      // Enter Click function
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            if(chatValue.trim() !== '' || fileData) {
+            handleSend();}
+  
+
 
   const selectedChatById = async (chatId) => {
     try {
@@ -193,8 +217,29 @@ const AppContext = ({ children }) => {
       }
     };
 
-    fetchAccountType();
-  }, []);
+    useEffect(() => {
+        getAllChats();
+    }, []);
+
+    useEffect(() => {
+        const fetchAccountType = async () => {
+            try {
+                const { account, statusCode } = await getAccount();
+                if (account) {
+                    setAccount(account);
+                }
+                setStatus(statusCode);
+            } catch (error) {
+                setAccount(null);
+                setStatus(null);
+            }
+        };
+
+        fetchAccountType();
+    }, []);
+
+    
+
 
   return (
     <ContextApp.Provider
@@ -223,6 +268,7 @@ const AppContext = ({ children }) => {
         setFileData,
         getAllChats,
         setChats,
+    fileData,
       }}
     >
       {children}

@@ -21,6 +21,7 @@ function ChatContainer() {
     handleSend,
     handleKeyPress,
     account,
+    fileData,
     setFileData,
   } = useContext(ContextApp);
 
@@ -30,6 +31,12 @@ function ChatContainer() {
   const handleClick = () => {
     document.getElementById('file-upload').click();
   };
+
+  useEffect(() => {
+    if (!fileData) {
+      setFilePreview(null);
+    }
+  }, [fileData]);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -98,7 +105,7 @@ function ChatContainer() {
 
       {/* chat input section */}
       <div className="self-center h-fit w-[90%] lg:w-2/5 xl:w-1/2 flex rounded-lg shadow-md  items-center bg-main-light-grey justify-center flex-col gap-2 my-2">
-        {filePreview && (
+        {fileData && (
           <div className="relative self-start">
             <img
               src={filePreview}
@@ -111,7 +118,7 @@ function ChatContainer() {
                 setFilePreview(null); 
                 setFileData(null); 
               }}
-              title="Удалить"
+              title="Delete"
             >
               <AiFillCloseCircle size={20}/>
             </button>
@@ -125,6 +132,7 @@ function ChatContainer() {
             value={chatValue}
             onChange={(e) => setChatValue(e.target.value)}
             onKeyUp={handleKeyPress}
+          
           />
           <div className="m-3 gap-3 flex">
             <BsPaperclip
