@@ -12,17 +12,22 @@ export const sendMessage = async (token, chatId, chatValue, updateMessages, file
         }
 
         const body = {
-            text: chatValue,
+            text: chatValue,  // Сначала добавляем текст
         };
-
-        console.log(fileData)
-
+        
+        // Проверка наличия файла
         if (fileData && fileData.name && fileData.base64String) {
             body.file = {
                 name: fileData.name,
                 base64String: fileData.base64String,
             };
         }
+
+        // Добавляем первое сообщение с пробелом
+        updateMessages((prevMessages) => [
+            ...prevMessages,
+            { text: ' ', isBot: true }, // Изначально отправляем пробел
+        ]);
 
         const response = await fetch(
             `https://brestok-hector-demo-backend.hf.space/api/message/${chatId}`,
@@ -43,10 +48,7 @@ export const sendMessage = async (token, chatId, chatValue, updateMessages, file
         let currentText = '';
         let chunkQueue = [];
 
-        updateMessages((prevMessages) => [
-            ...prevMessages,
-            { text: chatValue, isBot: false },
-        ]);
+        
 
         while (!done) {
             const { value, done: doneReading } = await reader.read();
