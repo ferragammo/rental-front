@@ -14,6 +14,7 @@ const AppContext = ({ children }) => {
     const [chatValue, setChatValue] = useState('');
     const [account, setAccount] = useState('');
     const [status, setStatus] = useState('');
+
     const [selectedModel, setSelectedModel] = useState(
         ChatModelType.gpt_4o_mini
     );
@@ -44,6 +45,8 @@ const AppContext = ({ children }) => {
         }
     }, [message]);
 
+    
+
     const loadChatMessages = async (chatId) => {
         const token = Cookies.get('accessToken');
       
@@ -55,7 +58,11 @@ const AppContext = ({ children }) => {
                 if (result) {
                     const formattedMessages = result.data.map((msg) => ({
                         text: msg.text,
-                        isBot: msg.author === 'assistant', // Используем значение авторов для определения isBot
+                        isBot: msg.author === 'assistant',
+                        file: msg.file ? {
+                            name: msg.file.name,
+                            base64String: msg.file.base64String,
+                        } : null,
                     }));
 
                     setMessage(formattedMessages);
@@ -78,7 +85,21 @@ const AppContext = ({ children }) => {
     const handleSend = async () => {
         const text = chatValue;
         setChatValue('');
-        setMessage((prevMessages) => [...prevMessages, { text, isBot: false }]);
+        if (fileData && fileData.base64String) {
+            setMessage((prevMessages) => [
+                ...prevMessages,
+                {
+                    text,
+                    isBot: false,
+                    file: fileData // Добавляем информацию о файле
+                }
+            ]);
+        } else {
+            setMessage((prevMessages) => [
+                ...prevMessages,
+                { text, isBot: false }
+            ]);
+        }
         const token = Cookies.get('accessToken');
         if (!selectedChat) {
             try {
@@ -90,6 +111,7 @@ const AppContext = ({ children }) => {
                             token,
                             newChat.data.id,
                             text,
+             
                             setMessage
                         );
                     } else {
@@ -99,6 +121,7 @@ const AppContext = ({ children }) => {
                             newChat.data.id,
                             text,
                             setMessage,
+         
                             fileData
                         );
                     }
@@ -111,6 +134,7 @@ const AppContext = ({ children }) => {
             getAllChats()
         } else {
             if (!fileData) {
+  
                 await sendMessage(token, selectedChat, text, setMessage);
             } else {
                 console.log(fileData);
@@ -119,6 +143,7 @@ const AppContext = ({ children }) => {
                     selectedChat,
                     text,
                     setMessage,
+
                     fileData
                 );
             }
@@ -222,7 +247,8 @@ const AppContext = ({ children }) => {
                 selectedChatById,
                 setFileData,
                 getAllChats,
-                setChats
+       setChats
+
             }}
         >
             {children}
