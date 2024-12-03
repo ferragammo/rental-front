@@ -20,7 +20,7 @@ function Chat() {
                         >
                             {msg.isBot ? (
                                 <img
-                                    src='/icon.png'
+                                    src={`${process.env.PUBLIC_URL}/icon.png`}
                                     alt='bot'
                                     className='w-10 h-10 rounded object-cover'
                                 />
