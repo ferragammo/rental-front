@@ -24,7 +24,6 @@ function LeftNav() {
     selectedChat,
     selectedChatById,
     loadChatMessages,
-    setMessage
   } = useContext(ContextApp);
 
   const handleSelectChat = (chatId) => {
@@ -33,7 +32,7 @@ function LeftNav() {
 
   function handleLogout() {
     setSelectedChat(null);
-    setChats([])
+    setChats([]);
     Cookies.remove('accessToken', {
       path: '/',
     });
@@ -89,17 +88,7 @@ function LeftNav() {
         setSelectedChat(null);
         setIsModalOpen(false);
         setSelectedChatId(null);
-        loadChatMessages(null)
-        setMessage([
-          {
-            file: {
-              name: '',
-              base64String: '',
-            },
-            text: "Hi, I'm ChatGPT, a powerful language model created by OpenAI...",
-            isBot: true,
-          },
-        ]);
+        loadChatMessages(null);
       } else {
         console.error('Error deleting chat:', response.message);
         alert(`Error: ${response.message}`);
@@ -125,6 +114,7 @@ function LeftNav() {
         console.log('Chat created:', response);
         setSelectedChat(response.data.id);
         selectedChatById(response.data.id);
+       
       } else {
         console.error('Error creating chat:', response.message);
         alert(`Error: ${response.message}`);
@@ -188,7 +178,10 @@ function LeftNav() {
                   </div>
                   <button
                     className="ml-auto flex p-2 items-center justify-end"
-                    onClick={(e) => handleOpenModal(e, chat.id)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Остановка всплытия события
+                      handleOpenModal(e, chat.id);
+                    }}
                   >
                     <FiMoreHorizontal fontSize={20} />
                   </button>
