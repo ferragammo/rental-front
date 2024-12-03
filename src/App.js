@@ -4,13 +4,13 @@ import Home from './Page/Home';
 
 function App() {
   return (
-    <Router>
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth/login" element={<AuthPage />} />
         <Route path="/auth/register" element={<AuthPage />} />
       </Routes>
-    </Router>
+ 
   );
 }
 
