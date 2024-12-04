@@ -20,9 +20,9 @@ function ChatContainer() {
     setChatValue,
     handleSend,
     handleKeyPress,
-    account,
     fileData,
     setFileData,
+    isLoading,
   } = useContext(ContextApp);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -151,11 +151,12 @@ function ChatContainer() {
             <IoArrowUp
               title="send message"
               className={` p-1 rounded-full text-3xl ${
-                chatValue.length <= 0
-                  ? 'text-gray-400 bg-blue-800/50'
-                  : 'text-white cursor-pointer bg-blue-800 shadow-md '
+                chatValue.length > 0 || fileData
+                  ? 'text-white cursor-pointer bg-blue-800 shadow-md'
+                  : 'text-gray-400 bg-blue-800/50'
               }`}
-              onClick={handleSend}
+              aria-disabled={isLoading}
+              onClick={() => { if (!isLoading) { handleSend(); } }}
             />
           </div>
         </span>

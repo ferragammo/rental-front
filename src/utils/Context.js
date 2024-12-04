@@ -2,10 +2,21 @@ import { createContext, useEffect, useRef, useState } from 'react';
 import { getAccount } from '../api/accountApi';
 import { ChatModelType } from '../static/enums/ChatModelType';
 import Cookies from 'js-cookie';
-import { getAllChatMessages, sendMessage } from '../api/messageApi';
+import {
+    base64StringToUrl,
+    getAllChatMessages,
+    sendMessage,
+} from '../api/messageApi';
 import { createChat, getChatById, getChats } from '../api/chatApi';
 
 export const ContextApp = createContext();
+
+const defaultMessage = {
+    file: '',
+
+    text: "Hello! I'm Hector, your search assistant specializing in CNC technology and industrial products here at the Hectool marketplace. We offer a wide range of products and expert recommendations to simplify your search. What are you looking for?",
+    isBot: true,
+};
 
 const AppContext = ({ children }) => {
     const [showSlide, setShowSlide] = useState(false);
@@ -17,18 +28,9 @@ const AppContext = ({ children }) => {
     const [selectedModel, setSelectedModel] = useState(
         ChatModelType.gpt_4o_mini
     );
-    const [message, setMessage] = useState([
-        {
-            file: {
-                name: '',
-                base64String: '',
-            },
-
-            text: "Hello! I'm Hector, your search assistant specializing in CNC technology and industrial products here at the Hectool marketplace. We offer a wide range of products and expert recommendations to simplify your search. What are you looking for?",
-            isBot: true,
-        },
-    ]);
+    const [message, setMessage] = useState([defaultMessage]);
     const [fileData, setFileData] = useState(null);
+    const [isLoading, setIsLoading] =useState(false);
 
     useEffect(() => {
         console.log(fileData);
@@ -55,38 +57,15 @@ const AppContext = ({ children }) => {
                 const formattedMessages = result.data.map((msg) => ({
                     text: msg.text,
                     isBot: msg.author === 'assistant',
-                    file: msg.file ? {
-                        name: msg.file.name,
-                        base64String: msg.file.base64String,
-                    } : null,
+                    file: msg?.fileUrl,
                 }));
 
                 setMessage(formattedMessages);
             } else {
-                setMessage([
-                    {
-                        file: {
-                            name: '',
-                            base64String: '',
-                        },
-
-                        text: "Hello! I'm Hector, your search assistant specializing in CNC technology and industrial products here at the Hectool marketplace. We offer a wide range of products and expert recommendations to simplify your search. What are you looking for?",
-                        isBot: true,
-                    },
-                ]);
+                setMessage([defaultMessage]);
             }
         } else {
-            setMessage([
-                {
-                    file: {
-                        name: '',
-                        base64String: '',
-                    },
-
-                    text: "Hello! I'm Hector, your search assistant specializing in CNC technology and industrial products here at the Hectool marketplace. We offer a wide range of products and expert recommendations to simplify your search. What are you looking for?",
-                    isBot: true,
-                },
-            ]);
+            setMessage([defaultMessage]);
         }
     };
 
@@ -94,13 +73,19 @@ const AppContext = ({ children }) => {
     const handleSend = async () => {
         const text = chatValue;
         setChatValue('');
+        let fileUrl = null;
+        console.log(fileData)
+        setIsLoading(true);
         if (fileData && fileData.base64String) {
+            fileUrl = await base64StringToUrl(fileData);
+            setFileData(null);
+ 
             setMessage((prevMessages) => [
                 ...prevMessages,
                 {
                     text,
                     isBot: false,
-                    file: fileData,
+                    file: fileUrl,
                 },
             ]);
         } else {
@@ -115,26 +100,15 @@ const AppContext = ({ children }) => {
                 const newChat = await createChat(selectedModel, token || null);
                 if (newChat) {
                     setSelectedChat(newChat.data.id);
-                    if (!fileData) {
-                        await sendMessage(
-                            token,
-                            newChat.data.id,
-                            text,
+                    await sendMessage(
+                        token,
+                        newChat.data.id,
+                        text,
+                        setMessage,
+                        fileUrl || null
+                    );
 
-                            setMessage
-                        );
-                    } else {
-                        console.log(fileData);
-                        await sendMessage(
-                            token,
-                            newChat.data.id,
-                            text,
-                            setMessage,
-
-                            fileData
-                        );
-                        setFileData(null);
-                    }
+                   
                 } else {
                     console.error('Failed to create a new chat');
                 }
@@ -143,31 +117,26 @@ const AppContext = ({ children }) => {
             }
             getAllChats();
         } else {
-            if (!fileData) {
-                await sendMessage(token, selectedChat, text, setMessage);
-            } else {
-                console.log(fileData);
-                const sendFileData = fileData;
-                setFileData(null);
-                await sendMessage(
-                    token,
-                    selectedChat,
-                    text,
-                    setMessage,
-
-                    sendFileData
-                );
-            }
+            await sendMessage(
+                token,
+                selectedChat,
+                text,
+                setMessage,
+                fileUrl || null
+            );
         }
+        setIsLoading(false)
     };
 
     // Enter Click function
     const handleKeyPress = (e) => {
+        if(!isLoading) {
         if (e.key === 'Enter') {
             if (chatValue.trim() !== '' || fileData) {
                 handleSend();
             }
         }
+    }
     };
 
     const selectedChatById = async (chatId) => {
@@ -252,6 +221,7 @@ const AppContext = ({ children }) => {
                 getAllChats,
                 setChats,
                 fileData,
+                isLoading
             }}
         >
             {children}
