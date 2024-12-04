@@ -1,6 +1,12 @@
 import api from './index';
 
-export const sendMessage = async (token, chatId, chatValue, updateMessages, fileData={},) => {
+export const sendMessage = async (
+    token,
+    chatId,
+    chatValue,
+    updateMessages,
+    fileUrl
+) => {
     try {
         const headers = {
             'Content-Type': 'application/json',
@@ -12,21 +18,16 @@ export const sendMessage = async (token, chatId, chatValue, updateMessages, file
         }
 
         const body = {
-            text: chatValue,  // Сначала добавляем текст
+            text: chatValue,
         };
-        
-        // Проверка наличия файла
-        if (fileData && fileData.name && fileData.base64String) {
-            body.file = {
-                name: fileData.name,
-                base64String: fileData.base64String,
-            };
+
+        if (fileUrl) {
+            body.fileUrl = fileUrl;
         }
 
-        // Добавляем первое сообщение с пробелом
         updateMessages((prevMessages) => [
             ...prevMessages,
-            { text: ' ', isBot: true }, // Изначально отправляем пробел
+            { text: ' ', isBot: true },
         ]);
 
         const response = await fetch(
@@ -47,8 +48,6 @@ export const sendMessage = async (token, chatId, chatValue, updateMessages, file
         let done = false;
         let currentText = '';
         let chunkQueue = [];
-
-        
 
         while (!done) {
             const { value, done: doneReading } = await reader.read();
@@ -119,7 +118,26 @@ export const getAllChatMessages = async (token, chatId) => {
             throw new Error(response.data.error);
         }
     } catch (error) {
-        console.error('Error fetching account type:', error);
+        console.error('Error getting messages: ', error);
+        return error;
+    }
+};
+
+export const base64StringToUrl = async (fileData) => {
+    console.log(fileData)
+    try {
+        const response = await api.post(`/api/message/image`, 
+            fileData,
+        );
+
+        if (response.data.successful) {
+            const result = response.data.data.url;
+            return result;
+        } else {
+            throw new Error(response.data.error);
+        }
+    } catch (error) {
+        console.error('Error convert to url:', error);
         return error;
     }
 };

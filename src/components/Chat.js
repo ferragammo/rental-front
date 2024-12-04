@@ -30,17 +30,15 @@ function Chat() {
                                 </div>
                             )}
                             <div>
-                                {msg.file && msg.file.base64String && (
+                                {msg.file && (
                                     <div>
-                                        {msg.file.name.match(
-                                            /\.(jpg|png)$/
-                                        ) && (
+                                        {msg.file.match(/\.(jpg|png)$/i) &&
                                             <img
                                                 className='h-24'
-                                                src={`data:image/png;base64,${msg.file.base64String}`}
-                                                alt={msg.file.name}
+                                                src={msg.file}
+                                                alt='Attachment'
                                             />
-                                        )}
+                                        }
                                     </div>
                                 )}
                                 <p className='text-white text-[15px] group px-3'>
