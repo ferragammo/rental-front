@@ -14,7 +14,7 @@ export const ContextApp = createContext();
 const defaultMessage = {
     file: '',
 
-    text: "Hello! I'm Hector, your search assistant specializing in CNC technology and industrial products here at the Hectool marketplace. We offer a wide range of products and expert recommendations to simplify your search. What are you looking for?",
+    text: "こんにちは! I'm Hector, your expert assistant for precision measurement solutions and Mitutoyo products. I specialize in helping you find the perfect tools and accessories for your needs. What can I assist you with today?",
     isBot: true,
 };
 
