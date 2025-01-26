@@ -1,34 +1,21 @@
-import { createContext, useEffect, useRef, useState } from 'react';
-import { getAccount } from '../api/accountApi';
-import { ChatModelType } from '../static/enums/ChatModelType';
+import {createContext, useEffect, useRef, useState} from 'react';
+import {ChatModelType} from '../static/enums/ChatModelType';
 import Cookies from 'js-cookie';
-import {
-    base64StringToUrl,
-    getAllChatMessages,
-    sendMessage,
-} from '../api/messageApi';
-import { createChat, getChatById, getChats } from '../api/chatApi';
+import {base64StringToUrl, getAllChatMessages, sendMessage,} from '../api/messageApi';
+import {createChat, getChats} from '../api/chatApi';
 
 export const ContextApp = createContext();
 
-const defaultMessage = {
-    file: '',
-
-    text: "こんにちは! I'm Hector, your expert assistant for precision measurement solutions and Mitutoyo products. I specialize in helping you find the perfect tools and accessories for your needs. What can I assist you with today?",
-    isBot: true,
-};
 
 const AppContext = ({ children }) => {
     const [showSlide, setShowSlide] = useState(false);
     const [Mobile, setMobile] = useState(false);
     const [chats, setChats] = useState([]);
     const [chatValue, setChatValue] = useState('');
-    const [account, setAccount] = useState('');
-    const [status, setStatus] = useState('');
     const [selectedModel, setSelectedModel] = useState(
         ChatModelType.gpt_4o_mini
     );
-    const [message, setMessage] = useState([defaultMessage]);
+    const [message, setMessage] = useState([]);
     const [fileData, setFileData] = useState(null);
     const [isLoading, setIsLoading] =useState(false);
 
@@ -61,11 +48,7 @@ const AppContext = ({ children }) => {
                 }));
 
                 setMessage(formattedMessages);
-            } else {
-                setMessage([defaultMessage]);
             }
-        } else {
-            setMessage([defaultMessage]);
         }
     };
 
@@ -139,23 +122,6 @@ const AppContext = ({ children }) => {
     }
     };
 
-    const selectedChatById = async (chatId) => {
-        try {
-            const token = Cookies.get('accessToken');
-            if (!token) {
-                console.error('Token not found');
-                return;
-            }
-            const chat = await getChatById(chatId, token);
-            if (chat) {
-                setSelectedChat(chatId);
-                loadChatMessages(chatId);
-            }
-        } catch (error) {
-            console.error('Error fetching chat by ID:', error.message);
-        }
-    };
-
     const getAllChats = async () => {
         try {
             const token = Cookies.get('accessToken');
@@ -177,22 +143,6 @@ const AppContext = ({ children }) => {
         getAllChats();
     }, []);
 
-    useEffect(() => {
-        const fetchAccountType = async () => {
-            try {
-                const { account, statusCode } = await getAccount();
-                if (account) {
-                    setAccount(account);
-                }
-                setStatus(statusCode);
-            } catch (error) {
-                setAccount(null);
-                setStatus(null);
-            }
-        };
-
-        fetchAccountType();
-    }, []);
 
     return (
         <ContextApp.Provider
@@ -209,14 +159,11 @@ const AppContext = ({ children }) => {
                 chats,
                 msgEnd,
                 handleKeyPress,
-                account,
-                status,
                 loadChatMessages,
                 selectedModel,
                 setSelectedModel,
                 setSelectedChat,
                 selectedChat,
-                selectedChatById,
                 setFileData,
                 getAllChats,
                 setChats,
