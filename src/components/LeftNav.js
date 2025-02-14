@@ -1,14 +1,11 @@
-import React, { useContext, useState } from 'react';
-import { AiOutlinePlus } from 'react-icons/ai';
-import { FiMessageSquare, FiMoreHorizontal } from 'react-icons/fi';
-import { ContextApp } from '../utils/Context';
+import React, {useContext, useState} from 'react';
+import {AiOutlinePlus} from 'react-icons/ai';
+import {FiMessageSquare, FiMoreHorizontal} from 'react-icons/fi';
+import {ContextApp} from '../utils/Context';
 import Cookies from 'js-cookie';
-import { createChat } from '../api/chatApi';
 import ModalMore from './ModalMore';
-import { useNavigate } from 'react-router-dom';
 
 function LeftNav() {
-  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [buttonPosition, setButtonPosition] = useState({ bottom: 0, right: 0 });
@@ -19,25 +16,11 @@ function LeftNav() {
     showSlide,
     getAllChats,
     chats,
-    setChats,
     setSelectedChat,
     selectedChat,
     selectedChatById,
-    loadChatMessages,
   } = useContext(ContextApp);
 
-  const handleSelectChat = (chatId) => {
-    selectedChatById(chatId);
-  };
-
-  function handleLogout() {
-    setSelectedChat(null);
-    setChats([]);
-    Cookies.remove('accessToken', {
-      path: '/',
-    });
-    navigate('/auth/login');
-  }
 
   const handleOpenModal = (e, chatId) => {
     const buttonRect = e.currentTarget.getBoundingClientRect();
@@ -60,28 +43,6 @@ function LeftNav() {
     setIsModalOpen(false);
   };
 
-  const handleCreateChat = async () => {
-    try {
-      const token = Cookies.get('accessToken');
-      if (!token) {
-        return { account: null, statusCode: 401 };
-      }
-      const response = await createChat(selectedModel, token);
-      if (response.successful) {
-        console.log('Chat created:', response);
-        setSelectedChat(response.data.id);
-        selectedChatById(response.data.id);
-       
-      } else {
-        console.error('Error creating chat:', response.message);
-        alert(`Error: ${response.message}`);
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
-    }
-    getAllChats();
-  };
-
   const isLoggedIn = !!Cookies.get('accessToken');
 
   return (
@@ -96,7 +57,6 @@ function LeftNav() {
         <span className="text-xl font-semibold">Chatbot</span>
         <button
           className="rounded px-3 py-[9px] hidden lg:flex items-center justify-center cursor-pointer text-white m-1 hover:bg-gray-600 duration-200"
-          onClick={handleCreateChat}
         >
           <AiOutlinePlus fontSize={16} />
         </button>
@@ -109,7 +69,6 @@ function LeftNav() {
               className={`rounded-lg w-full py-2 px-3 text-xs my-2 flex items-center justify-between cursor-pointer hover:bg-[#212121] transition-all duration-300 overflow-hidden truncate whitespace-nowrap ${
                 chat.id === selectedChat ? 'bg-[#212121]' : ''
               }`}
-              onClick={() => handleSelectChat(chat.id)}
             >
               {selectedChatId === chat.id && isEditing ? (
                 <div className="flex w-full items-center gap-2">
@@ -148,12 +107,6 @@ function LeftNav() {
           <p>No chats available</p>
         )}
       </div>
-      <button
-        onClick={isLoggedIn ? handleLogout : () => navigate('/auth/login')}
-        className="text-lg font-geist bg-[#212121] duration-300 truncate mb-2 hover:bg-[#2c2b2b] py-3 rounded-lg w-full"
-      >
-        {isLoggedIn ? 'Log Out' : 'Log In'}
-      </button>
 
       <ModalMore
         isOpen={isModalOpen}

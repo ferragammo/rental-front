@@ -152,7 +152,6 @@ function Mobile() {
         )}
       </div>
       <button
-        onClick={isLoggedIn ? handleLogout : () => navigate('/auth/login')}
         className="text-lg font-geist bg-[#212121] duration-300 truncate mb-2 hover:bg-[#2c2b2b] py-3 rounded-lg w-full"
       >
         {isLoggedIn ? 'Log Out' : 'Log In'}
