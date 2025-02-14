@@ -4,7 +4,7 @@ import { ContextApp } from "../utils/Context";
 import { AiOutlinePlus } from "react-icons/ai";
 import { FiMessageSquare, FiMoreHorizontal } from 'react-icons/fi';
 import Cookies from 'js-cookie';
-import { createChat, deleteChat, updateTitle } from '../api/chatApi';
+import { createChat } from '../api/chatApi';
 import ModalMore from './ModalMore';
 import { useNavigate } from 'react-router-dom';
 
@@ -57,49 +57,6 @@ function Mobile() {
     setIsEditing(true);
     const chat = chats.find((c) => c.id === selectedChatId);
     setNewTitle(chat.title);
-  };
-
-  const handleSaveTitle = async () => {
-    const token = Cookies.get('accessToken');
-    if (!selectedChatId) return;
-
-    try {
-      const response = await updateTitle(selectedChatId, token, newTitle);
-      if (response.successful) {
-        console.log('update');
-      } else {
-        console.error('Failed to update title:', response.message);
-        alert(response.message);
-      }
-    } catch (error) {
-      console.error('Error updating title:', error);
-      alert('Unexpected error occurred while updating title.');
-    } finally {
-      setIsEditing(false);
-      setSelectedChatId(null);
-      setNewTitle('');
-    }
-    getAllChats();
-  };
-
-  const handleDelete = async (chatId) => {
-    const token = Cookies.get('accessToken');
-    try {
-      const response = await deleteChat(chatId, token);
-      if (response.successful) {
-        console.log('Chat deleted successfully:', response);
-        setSelectedChat(null);
-        setIsModalOpen(false);
-        setSelectedChatId(null);
-        loadChatMessages(null);
-      } else {
-        console.error('Error deleting chat:', response.message);
-        alert(`Error: ${response.message}`);
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
-    }
-    getAllChats();
   };
 
   const handleCloseModal = () => {
@@ -167,10 +124,8 @@ function Mobile() {
                     onChange={(e) => setNewTitle(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        handleSaveTitle();
                       }
                     }}
-                    onBlur={handleSaveTitle}
                   />
                 </div>
               ) : (
@@ -197,7 +152,6 @@ function Mobile() {
         )}
       </div>
       <button
-        onClick={isLoggedIn ? handleLogout : () => navigate('/auth/login')}
         className="text-lg font-geist bg-[#212121] duration-300 truncate mb-2 hover:bg-[#2c2b2b] py-3 rounded-lg w-full"
       >
         {isLoggedIn ? 'Log Out' : 'Log In'}
@@ -206,7 +160,6 @@ function Mobile() {
       <ModalMore
         isOpen={isModalOpen}
         onRename={handleRename}
-        onDelete={() => handleDelete(selectedChatId)}
         onClose={handleCloseModal}
         position={buttonPosition}
       />

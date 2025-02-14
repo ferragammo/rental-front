@@ -2,7 +2,7 @@
   "name": "chat-gpt",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://brestok-1.github.io/hectool-demo-frontend",
+  "homepage": "https://brestok-1.github.io/agent-io",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
