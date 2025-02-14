@@ -18,10 +18,6 @@ const AppContext = ({ children }) => {
     const [fileData, setFileData] = useState(null);
     const [isLoading, setIsLoading] =useState(false);
 
-    useEffect(() => {
-        console.log(fileData);
-    }, [fileData]);
-
     const [selectedChat, setSelectedChat] = useState(null);
     //'674d7f4eed4768a959ab111c'
     const msgEnd = useRef(null);
@@ -35,7 +31,6 @@ const AppContext = ({ children }) => {
     const handleSend = async () => {
         const text = chatValue;
         setChatValue('');
-        console.log(fileData)
         setIsLoading(true);
         setMessage((prevMessages) => [
             ...prevMessages,

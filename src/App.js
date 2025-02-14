@@ -1,4 +1,3 @@
-import {Route, Routes} from 'react-router-dom';
 import Home from './Page/Home';
 import {useEffect} from "react";
 import Cookies from "js-cookie";
@@ -39,11 +38,7 @@ function App() {
 
     useTokenRefresh();
   return (
-
-      <Routes>
-        <Route path="/" element={<Home />} />
-      </Routes>
- 
+      <Home/>
   );
 }
 
