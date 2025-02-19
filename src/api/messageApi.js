@@ -1,5 +1,4 @@
 export const sendMessage = async (
-    token,
     chatValue,
     updateMessages,
 ) => {
@@ -9,16 +8,12 @@ export const sendMessage = async (
             'accept': 'application/json'
         }
 
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-
         const body = {
             text: chatValue,
         };
 
         const response = await fetch(
-            'https://maple-ai-dev.onrender.com/v1/admin/agent/1/search',
+            'https://app.bundyonsol.xyz/api/agent/1/search',
             {
                 method: 'POST',
                 headers: headers,

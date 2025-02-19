@@ -36,11 +36,9 @@ const AppContext = ({ children }) => {
             ...prevMessages,
             {text, isBot: false},
         ]);
-        const token = Cookies.get('accessToken');
         if (!selectedChat) {
             try {
                     await sendMessage(
-                        token,
                         text,
                         setMessage,
                     );
@@ -50,8 +48,6 @@ const AppContext = ({ children }) => {
             }
         } else {
             await sendMessage(
-                token,
-                selectedChat,
                 text,
                 setMessage,
             );
