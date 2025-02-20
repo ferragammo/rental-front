@@ -1,12 +1,12 @@
-import React, { useContext, useState } from "react";
-import { MdClose } from "react-icons/md";
-import { ContextApp } from "../utils/Context";
-import { AiOutlinePlus } from "react-icons/ai";
-import { FiMessageSquare, FiMoreHorizontal } from 'react-icons/fi';
+import React, {useContext, useState} from "react";
+import {MdClose} from "react-icons/md";
+import {ContextApp} from "../utils/Context";
+import {AiOutlinePlus} from "react-icons/ai";
+import {FiMessageSquare, FiMoreHorizontal} from 'react-icons/fi';
 import Cookies from 'js-cookie';
-import { createChat } from '../api/chatApi';
+import {createChat} from '../api/chatApi';
 import ModalMore from './ModalMore';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 
 
 function Mobile() {
@@ -26,21 +26,11 @@ function Mobile() {
     setSelectedChat,
     selectedChat,
     selectedChatById,
-    loadChatMessages,
   } = useContext(ContextApp);
 
   const handleSelectChat = (chatId) => {
     selectedChatById(chatId);
   };
-
-  function handleLogout() {
-    setSelectedChat(null);
-    setChats([]);
-    Cookies.remove('accessToken', {
-      path: '/',
-    });
-    navigate('/auth/login');
-  }
 
   const handleOpenModal = (e, chatId) => {
     const buttonRect = e.currentTarget.getBoundingClientRect();
