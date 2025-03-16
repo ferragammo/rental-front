@@ -2,8 +2,8 @@ import React, {useContext, useState} from 'react';
 import {AiOutlinePlus} from 'react-icons/ai';
 import {FiMessageSquare, FiMoreHorizontal} from 'react-icons/fi';
 import {ContextApp} from '../utils/Context';
-import Cookies from 'js-cookie';
 import ModalMore from './ModalMore';
+import { createChat, deleteChat, updateTitle } from '../api/chatApi';
 
 function LeftNav() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,15 +12,19 @@ function LeftNav() {
   const [newTitle, setNewTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const {
-    selectedModel,
     showSlide,
     getAllChats,
     chats,
     setSelectedChat,
     selectedChat,
     selectedChatById,
+    loadChatMessages,
   } = useContext(ContextApp);
 
+
+  const handleSelectChat = (chatId) => {
+    selectedChatById(chatId);
+  };
 
   const handleOpenModal = (e, chatId) => {
     const buttonRect = e.currentTarget.getBoundingClientRect();
@@ -39,11 +43,70 @@ function LeftNav() {
     setNewTitle(chat.title);
   };
 
+  const handleSaveTitle = async () => {
+    if (!selectedChatId) return;
+
+    try {
+      const response = await updateTitle(selectedChatId, newTitle);
+      if (response.successful) {
+        console.log('update');
+      } else {
+        console.error('Failed to update title:', response.message);
+        alert(response.message);
+      }
+    } catch (error) {
+      console.error('Error updating title:', error);
+      alert('Unexpected error occurred while updating title.');
+    } finally {
+      setIsEditing(false);
+      setSelectedChatId(null);
+      setNewTitle('');
+    }
+    getAllChats();
+  };
+
+  const handleDelete = async (chatId) => {
+  
+    try {
+      const response = await deleteChat(chatId);
+      if (response.successful) {
+        console.log('Chat deleted successfully:', response);
+        setSelectedChat(null);
+        setIsModalOpen(false);
+        setSelectedChatId(null);
+        loadChatMessages(null);
+      } else {
+        console.error('Error deleting chat:', response.message);
+        alert(`Error: ${response.message}`);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+    }
+    getAllChats();
+  };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
 
-  const isLoggedIn = !!Cookies.get('accessToken');
+  const handleCreateChat = async () => {
+    try {
+    
+      const response = await createChat();
+      if (response.successful) {
+        console.log('Chat created:', response);
+        setSelectedChat(response.data.id);
+        selectedChatById(response.data.id);
+       
+      } else {
+        console.error('Error creating chat:', response.message);
+        alert(`Error: ${response.message}`);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+    }
+    getAllChats();
+  };
 
   return (
     <div
@@ -57,6 +120,7 @@ function LeftNav() {
         <span className="text-xl font-semibold">Chatbot</span>
         <button
           className="rounded px-3 py-[9px] hidden lg:flex items-center justify-center cursor-pointer text-white m-1 hover:bg-gray-600 duration-200"
+          onClick={handleCreateChat}
         >
           <AiOutlinePlus fontSize={16} />
         </button>
@@ -69,6 +133,7 @@ function LeftNav() {
               className={`rounded-lg w-full py-2 px-3 text-xs my-2 flex items-center justify-between cursor-pointer hover:bg-[#212121] transition-all duration-300 overflow-hidden truncate whitespace-nowrap ${
                 chat.id === selectedChat ? 'bg-[#212121]' : ''
               }`}
+              onClick={() => handleSelectChat(chat.id)}
             >
               {selectedChatId === chat.id && isEditing ? (
                 <div className="flex w-full items-center gap-2">
@@ -80,8 +145,10 @@ function LeftNav() {
                     onChange={(e) => setNewTitle(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
+                        handleSaveTitle();
                       }
                     }}
+                    onBlur={handleSaveTitle}
                   />
                 </div>
               ) : (
@@ -111,6 +178,7 @@ function LeftNav() {
       <ModalMore
         isOpen={isModalOpen}
         onRename={handleRename}
+        onDelete={() => handleDelete(selectedChatId)}
         onClose={handleCloseModal}
         position={buttonPosition}
       />

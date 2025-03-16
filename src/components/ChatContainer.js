@@ -6,7 +6,7 @@ import { BsPaperclip } from 'react-icons/bs';
 import { IoArrowUp } from 'react-icons/io5';
 import Chat from './Chat';
 import ChatModelDropdown from './ChatModelDropdown';
-import { AiFillCloseCircle, AiOutlineFullscreenExit } from 'react-icons/ai';
+import { AiFillCloseCircle } from 'react-icons/ai';
 
 function ChatContainer() {
   const {
@@ -38,29 +38,29 @@ function ChatContainer() {
     }
   }, [fileData]);
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      // Если это изображение, показать превью
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
+  // const handleFileChange = (event) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     // Если это изображение, показать превью
+  //     if (file.type.startsWith('image/')) {
+  //       const reader = new FileReader();
 
-        reader.onload = (e) => {
-          setFilePreview(e.target.result); // Устанавливаем превью
+  //       reader.onload = (e) => {
+  //         setFilePreview(e.target.result); // Устанавливаем превью
 
-          // После того как файл прочитан, сохраняем имя и base64-строку
-          setFileData({
-            name: file.name, // Имя файла
-            base64String: e.target.result.split(',')[1], // Содержимое файла в base64
-          });
-        };
+  //         // После того как файл прочитан, сохраняем имя и base64-строку
+  //         setFileData({
+  //           name: file.name, // Имя файла
+  //           base64String: e.target.result.split(',')[1], // Содержимое файла в base64
+  //         });
+  //       };
 
-        reader.readAsDataURL(file); // Читаем файл как Data URL
-      } else {
-        setFilePreview(null); // Если не изображение, удаляем превью
-      }
-    }
-  };
+  //       reader.readAsDataURL(file); // Читаем файл как Data URL
+  //     } else {
+  //       setFilePreview(null); // Если не изображение, удаляем превью
+  //     }
+  //   }
+  // };
 
   return (
     <div
@@ -146,7 +146,7 @@ function ChatContainer() {
               type="file"
               accept=".jpg, .png"
               className="hidden"
-              onChange={handleFileChange}
+             
             />
             <IoArrowUp
               title="send message"

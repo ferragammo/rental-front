@@ -1,46 +1,33 @@
-export const sendMessage = async (
-    chatValue,
-    updateMessages,
-) => {
-    try {
-        const headers = {
-            'Content-Type': 'application/json',
-            'accept': 'application/json'
-        }
+import api from ".";
 
-        const body = {
-            text: chatValue,
-        };
+export const getAllChatMessages = async (chatId) => {
+   try {
+      const response = await api.get(`/api/message/${chatId}/all`, {});
 
-        const response = await fetch(
-            'https://app.bundyonsol.xyz/api/agent/1/search',
-            {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(body),
-            }
-        );
+      if (response.data.successful) {
+         const result = response.data.data;
+         return result;
+      } else {
+         throw new Error(response.data.error);
+      }
+   } catch (error) {
+      console.error("Error getting messages: ", error);
+      return error;
+   }
+};
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
+export const createMessage = async (chatId, text) => {
+   try {
+      const response = await api.post(`/api/message/${chatId}`, { text });
 
-        const data = await response.json();
-
-        updateMessages((prevMessages) => [
-            ...prevMessages,
-            { text: data.data.text, isBot: true },
-        ]);
-
-    } catch (error) {
-        const errorMessage =
-            error.response?.data?.error?.message ||
-            error.message ||
-            'Request failed';
-        console.error('Message sending failed:', errorMessage);
-        updateMessages((prevMessages) => [
-            ...prevMessages,
-            { text: 'Error: ' + errorMessage, isBot: true },
-        ]);
-    }
+      if (response.data.successful) {
+         const result = response.data.data;
+         return result;
+      } else {
+         throw new Error(response.data.error);
+      }
+   } catch (error) {
+      console.error("Error getting messages: ", error);
+      return error;
+   }
 };

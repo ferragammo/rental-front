@@ -4,28 +4,25 @@ import {ContextApp} from "../utils/Context";
 import {AiOutlinePlus} from "react-icons/ai";
 import {FiMessageSquare, FiMoreHorizontal} from 'react-icons/fi';
 import Cookies from 'js-cookie';
-import {createChat} from '../api/chatApi';
+import {createChat, deleteChat, updateTitle} from '../api/chatApi';
 import ModalMore from './ModalMore';
-import {useNavigate} from 'react-router-dom';
 
 
 function Mobile() {
-  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [buttonPosition, setButtonPosition] = useState({ bottom: 0, right: 0 });
   const [newTitle, setNewTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const {
-    selectedModel,
     getAllChats,
     Mobile, 
     setMobile,
     chats,
-    setChats,
     setSelectedChat,
     selectedChat,
     selectedChatById,
+    loadChatMessages,
   } = useContext(ContextApp);
 
   const handleSelectChat = (chatId) => {
@@ -53,13 +50,52 @@ function Mobile() {
     setIsModalOpen(false);
   };
 
+   const handleSaveTitle = async () => {
+      if (!selectedChatId) return;
+  
+      try {
+        const response = await updateTitle(selectedChatId, newTitle);
+        if (response.successful) {
+          console.log('update');
+        } else {
+          console.error('Failed to update title:', response.message);
+          alert(response.message);
+        }
+      } catch (error) {
+        console.error('Error updating title:', error);
+        alert('Unexpected error occurred while updating title.');
+      } finally {
+        setIsEditing(false);
+        setSelectedChatId(null);
+        setNewTitle('');
+      }
+      getAllChats();
+    };
+  
+    const handleDelete = async (chatId) => {
+    
+      try {
+        const response = await deleteChat(chatId);
+        if (response.successful) {
+          console.log('Chat deleted successfully:', response);
+          setSelectedChat(null);
+          setIsModalOpen(false);
+          setSelectedChatId(null);
+          loadChatMessages(null);
+        } else {
+          console.error('Error deleting chat:', response.message);
+          alert(`Error: ${response.message}`);
+        }
+      } catch (error) {
+        console.error('Unexpected error:', error);
+      }
+      getAllChats();
+    };
+
   const handleCreateChat = async () => {
     try {
-      const token = Cookies.get('accessToken');
-      if (!token) {
-        return { account: null, statusCode: 401 };
-      }
-      const response = await createChat(selectedModel, token);
+    
+      const response = await createChat();
       if (response.successful) {
         console.log('Chat created:', response);
         setSelectedChat(response.data.id);
@@ -114,8 +150,10 @@ function Mobile() {
                     onChange={(e) => setNewTitle(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
+                        handleSaveTitle();
                       }
                     }}
+                    onBlur={handleSaveTitle}
                   />
                 </div>
               ) : (
@@ -127,7 +165,7 @@ function Mobile() {
                   <button
                     className="ml-auto flex p-2 items-center justify-end"
                     onClick={(e) => {
-                      e.stopPropagation(); // Остановка всплытия события
+                      e.stopPropagation();
                       handleOpenModal(e, chat.id);
                     }}
                   >
@@ -150,6 +188,7 @@ function Mobile() {
       <ModalMore
         isOpen={isModalOpen}
         onRename={handleRename}
+        onDelete={() => handleDelete(selectedChatId)}
         onClose={handleCloseModal}
         position={buttonPosition}
       />
