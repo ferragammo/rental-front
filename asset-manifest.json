@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/clipboardhealth-ui/static/css/main.452e8ce6.css",
-    "main.js": "/clipboardhealth-ui/static/js/main.fcca6cc3.js",
-    "index.html": "/clipboardhealth-ui/index.html",
-    "main.452e8ce6.css.map": "/clipboardhealth-ui/static/css/main.452e8ce6.css.map",
-    "main.fcca6cc3.js.map": "/clipboardhealth-ui/static/js/main.fcca6cc3.js.map"
+    "main.css": "/rental-front/static/css/main.452e8ce6.css",
+    "main.js": "/rental-front/static/js/main.12c4cd70.js",
+    "index.html": "/rental-front/index.html",
+    "main.452e8ce6.css.map": "/rental-front/static/css/main.452e8ce6.css.map",
+    "main.12c4cd70.js.map": "/rental-front/static/js/main.12c4cd70.js.map"
   },
   "entrypoints": [
     "static/css/main.452e8ce6.css",
-    "static/js/main.fcca6cc3.js"
+    "static/js/main.12c4cd70.js"
   ]
 }
