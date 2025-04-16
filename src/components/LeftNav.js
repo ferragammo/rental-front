@@ -8,6 +8,7 @@ import { createChat, deleteChat, updateTitle } from '../api/chatApi';
 function LeftNav() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedChatId, setSelectedChatId] = useState(null);
+  
   const [buttonPosition, setButtonPosition] = useState({ bottom: 0, right: 0 });
   const [newTitle, setNewTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -18,6 +19,8 @@ function LeftNav() {
     setSelectedChat,
     selectedChat,
     selectedChatById,
+
+    
     loadChatMessages,
   } = useContext(ContextApp);
 
@@ -25,6 +28,7 @@ function LeftNav() {
   const handleSelectChat = (chatId) => {
     selectedChatById(chatId);
   };
+  
 
   const handleOpenModal = (e, chatId) => {
     const buttonRect = e.currentTarget.getBoundingClientRect();

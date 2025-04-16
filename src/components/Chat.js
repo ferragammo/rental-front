@@ -2,6 +2,9 @@ import React, { useContext } from 'react';
 import { ContextApp } from '../utils/Context';
 import ReactMarkdown from 'react-markdown';
 import { AiOutlineUser } from 'react-icons/ai';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import remarkBreaks from 'remark-breaks'; 
 
 function Chat() {
     const { message, msgEnd } = useContext(ContextApp);
@@ -42,7 +45,10 @@ function Chat() {
                                     </div>
                                 )}
                                 <p className='text-white text-[15px] group px-3'>
-                                    <ReactMarkdown>{msg?.text}</ReactMarkdown>
+                                <ReactMarkdown 
+                                    children={msg?.text} 
+                                    remarkPlugins={[remarkGfm, remarkParse, remarkBreaks]} // Добавляем remark-breaks
+                                />
                                 </p>
                             </div>
                         </span>
